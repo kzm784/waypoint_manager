@@ -35,8 +35,6 @@ class WaypointManager(Node):
         if not self.waypoints_data:
             self.get_logger().error("No waypoints loaded. Please check the CSV file.")
             return
-        
-        self.speak_text_id_pub.publish(Int32(data=0))
 
         # Variables to manage waypoints and navigation
         self.current_waypoint_index = 0
