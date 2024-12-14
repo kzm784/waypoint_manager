@@ -166,12 +166,14 @@ class WaypointManager(Node):
                 self.skip_flag = False
                 self.current_waypoint_index += 1
                 self.advance_to_next_waypoint()
+                
         elif status == GoalStatus.STATUS_CANCELED:
             # Handle goal cancellation
             self.get_logger().info(f'Navigation to waypoint {self.current_waypoint_index} canceled.')
             self.skip_flag = False
             self.current_waypoint_index += 1
             self.advance_to_next_waypoint()
+            
         else:
             # Handle other statuses
             self.get_logger().warn(f'Goal failed with status code: {status}. Not advancing to next waypoint.')
