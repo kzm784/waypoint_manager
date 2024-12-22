@@ -4,5 +4,5 @@ map_server:
 
 waypoint_creater_node:
   ros__parameters:
-    waypoints_file_name : 'test'
+    waypoints_file_name : 'test.csv'
 
