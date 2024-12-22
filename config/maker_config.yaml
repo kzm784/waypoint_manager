@@ -1,3 +1,0 @@
-waypoint_maker_node:
-  ros__parameters:
-    saving_waypoints_file_name: '2024_atc_divide_2.csv'
