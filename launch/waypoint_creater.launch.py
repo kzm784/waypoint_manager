@@ -49,7 +49,7 @@ def generate_launch_description():
         name='waypoint_creater_node',
         output='screen',
         emulate_tty=True,
-        remappings=[('/pose', '/initialpose')],
+        remappings=[('/pose', '/goal_pose')],
         parameters=[creater_config_file_path],
     )
 
