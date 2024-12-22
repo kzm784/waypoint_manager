@@ -1,4 +1,4 @@
-waypoint_saver_node:
+wayopint_recorder_node:
   ros__parameters:
     saving_waypoints_file_name: 'oit20241026.csv'
     

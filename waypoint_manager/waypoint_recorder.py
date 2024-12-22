@@ -14,9 +14,9 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
 
-class WaypointSaver(Node):
+class WaypointRecorder(Node):
     def __init__(self):
-        super().__init__('waypoint_saver')
+        super().__init__('wayopint_recorder')
 
         # Parameters
         self.declare_parameter('saving_waypoints_file_name', '')
@@ -300,7 +300,7 @@ class WaypointSaver(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    pose_recorder = WaypointSaver()
+    pose_recorder = WaypointRecorder()
 
     try:
         rclpy.spin(pose_recorder)
