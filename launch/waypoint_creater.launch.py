@@ -8,7 +8,7 @@ def generate_launch_description():
     # Get package directory
     package_dir = get_package_share_directory('waypoint_manager')
     creater_config_file_path = os.path.join(package_dir, 'config', 'creater_config.yaml')
-    rviz_config_file = os.path.join(package_dir, 'rviz', 'creater.rviz')
+    rviz_config_file = os.path.join(package_dir, 'config', 'creater.rviz')
 
     # RViz2 Node
     start_rviz_cmd = Node(
