@@ -23,7 +23,7 @@ class WaypointCreater(Node):
 
         # Publishers
         self.marker_pub = self.create_publisher(MarkerArray, 'waypoint/markers', 10)
-        self.arrow_marker_pub_ = self.create_publisher(MarkerArray, 'waypoint/arrow_markers', 10)  # For arrow markers
+        self.arrow_marker_pub_ = self.create_publisher(MarkerArray, 'waypoint/arrow_markers', 10)
         self.text_marker_pub = self.create_publisher(MarkerArray, 'waypoint/text_markers', 10)
         self.line_marker_pub = self.create_publisher(MarkerArray, 'waypoint/line_markers', 10)
 
