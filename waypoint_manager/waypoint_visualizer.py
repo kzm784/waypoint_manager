@@ -1,9 +1,10 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Point
 from std_msgs.msg import Int32
 from visualization_msgs.msg import Marker, MarkerArray
 import csv
+import math
 from datetime import datetime
 
 class WaypointVisualizer(Node):
@@ -16,6 +17,7 @@ class WaypointVisualizer(Node):
         self.markers = MarkerArray()
         self.text_markers = MarkerArray()
         self.line_markers = MarkerArray()
+        self.arrow_markers = MarkerArray()
 
         filename = self.get_parameter('waypoints_csv').get_parameter_value().string_value
         map_frame = self.get_parameter('map_frame').get_parameter_value().string_value
@@ -29,6 +31,7 @@ class WaypointVisualizer(Node):
         self.marker_pub = self.create_publisher(MarkerArray, 'waypoint/markers', 10)
         self.text_marker_pub = self.create_publisher(MarkerArray, 'waypoint/text_markers', 10)
         self.line_marker_pub = self.create_publisher(MarkerArray, 'waypoint/line_markers', 10)
+        self.arrow_marker_pub = self.create_publisher(MarkerArray, 'waypoint/arrow_markers', 10)
 
         self.waypoint_id_sub = self.create_subscription(Int32, 'next_waypoint_id', self.waypoint_id_callback, 10)
 
@@ -95,13 +98,50 @@ class WaypointVisualizer(Node):
                         text_marker.text = str(waypoint_id)
                         self.text_markers.markers.append(text_marker)
 
+                        # Create a arrow_marker to displey the wayopint orientation
+                        arrow_marker = Marker()
+                        arrow_marker.header.frame_id = map_frame
+                        arrow_marker.header.stamp = self.get_current_time()
+                        arrow_marker.ns = "waypoints_arrows"
+                        arrow_marker.id = waypoint_id + 2000 
+                        arrow_marker.type = Marker.ARROW
+                        arrow_marker.action = Marker.ADD
+
+                        start_point = Point(
+                            x = pose.pose.position.x,
+                            y = pose.pose.position.y,
+                            z = pose.pose.position.z
+                        )
+                        end_point = Point()
+                        arrow_length = 0.3
+                        orientation = pose.pose.orientation
+                        yaw = math.atan2(
+                            2.0 * (orientation.w * orientation.z + orientation.x * orientation.y),
+                            1.0 - 2.0 * (orientation.y**2 + orientation.z**2)
+                        )
+                        end_point.x = start_point.x + arrow_length * math.cos(yaw)
+                        end_point.y = start_point.y + arrow_length * math.sin(yaw)
+                        end_point.z = start_point.z
+
+                        arrow_marker.points.append(start_point)
+                        arrow_marker.points.append(end_point)
+
+                        arrow_marker.scale.x = 0.05
+                        arrow_marker.scale.y = 0.1
+                        arrow_marker.scale.z = 0.1
+                        arrow_marker.color.a = 1.0
+                        arrow_marker.color.r = 1.0
+                        arrow_marker.color.g = 0.0
+                        arrow_marker.color.b = 0.0
+                        self.arrow_markers.markers.append(arrow_marker)
+
                         # Create line marker (skip the first waypoint)
                         if index > 0:
                             line_marker = Marker()
                             line_marker.header.frame_id = map_frame
                             line_marker.header.stamp = self.get_current_time()
                             line_marker.ns = "waypoints_lines"
-                            line_marker.id = waypoint_id + 2000
+                            line_marker.id = waypoint_id + 3000
                             line_marker.type = Marker.LINE_STRIP
                             line_marker.action = Marker.ADD
                             line_marker.scale.x = 0.02
@@ -177,6 +217,7 @@ class WaypointVisualizer(Node):
         self.marker_pub.publish(self.markers)
         self.text_marker_pub.publish(self.text_markers)
         self.line_marker_pub.publish(self.line_markers)
+        self.arrow_marker_pub.publish(self.arrow_markers)
 
 def main(args=None):
     rclpy.init(args=args)
