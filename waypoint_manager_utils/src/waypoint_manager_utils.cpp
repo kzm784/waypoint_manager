@@ -1,0 +1,1 @@
+#include <waypoint_manager_utils/waypoint_manager_utils.hpp>
