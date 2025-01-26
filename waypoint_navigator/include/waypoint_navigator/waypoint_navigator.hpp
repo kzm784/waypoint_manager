@@ -1,0 +1,43 @@
+#ifndef WAYPOINT_MANAGER__WAYPOINT_NAVIGATOR_
+#define WAYPOINT_MANAGER__WAYPOINT_NAVIGATOR_
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
+#include <waypoint_manager_utils/waypoint_manager_utils.hpp>
+
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/int32.hpp>
+#include <nav2_msgs/action/navigate_to_pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+
+class WaypointNavigator : public rclcpp::Node
+{
+public:
+    explicit WaypointNavigator(const rclcpp::NodeOptions & options);
+
+private:
+    void sendGoal(const geometry_msgs::msg::PoseStamped& goal_pose);
+    void updateWaypoint();
+    void updateGoal();
+
+    // Parameters
+    std::string waypoints_csv_;
+    bool loop_enable_{false};
+    int loop_count_{0};
+    int waypoint_id_{0};
+
+    // ROS 2 Interfaces
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr next_waypoint_id_pub_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr reached_waypoint_id_pub_;
+    rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav2_pose_client_;
+
+    // State variables
+    bool retry_once_{false};
+    bool skip_enable_{false};
+    bool event_enable_{false};
+    bool nav2_enable_{true};
+    std::vector<std::vector<std::string>> waypoints_data_;
+    geometry_msgs::msg::PoseStamped pose_msg_;
+};
+
+#endif  // WAYPOINT_MANAGER__WAYPOINT_NAVIGATOR_
