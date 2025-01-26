@@ -3,11 +3,20 @@
 <package format="3">
   <name>waypoint_manager</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="kazulab10969@outlook.jp">kazuma</maintainer>
-  <license>TODO: License declaration</license>
+  <description>waypoint_manager</description>
+  <maintainer email="kazulab10969@outlook.jp">Kazuma Yagi</maintainer>
+  <license>Apache License 2.0</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>waypoint_creater</depend>
+  <depend>waypoint_manager_utils</depend>
+  <depend>waypoint_navigator</depend>
+  <depend>waypoint_server</depend>
+  <depend>waypoint_server_msgs</depend>
+  <depend>waypoint_visualizer</depend>
+
+  <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
