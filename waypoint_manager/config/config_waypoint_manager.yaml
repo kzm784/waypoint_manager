@@ -3,3 +3,7 @@ waypoint_navigator_node:
     start_waypoint_id: 0
     loop_enable: true
     loop_count: 2
+
+waypoint_visualizer_node:
+  ros__parameters:
+    visualization_frame_id: "map"

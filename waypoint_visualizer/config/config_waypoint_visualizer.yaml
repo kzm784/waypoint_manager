@@ -1,0 +1,3 @@
+waypoint_visualizer_node:
+  ros__parameters:
+    visualization_frame_id: "map"
