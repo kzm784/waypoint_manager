@@ -9,6 +9,8 @@
 #include <std_msgs/msg/int32.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <example_interfaces/msg/empty.hpp>
+#include <waypoint_server_msgs/srv/command.hpp>
 
 class WaypointNavigator : public rclcpp::Node
 {
@@ -16,9 +18,11 @@ public:
     explicit WaypointNavigator(const rclcpp::NodeOptions & options);
 
 private:
-    void sendGoal(const geometry_msgs::msg::PoseStamped& goal_pose);
+    void sendGoal();
     void updateWaypoint();
+    void responseCallback(rclcpp::Client<waypoint_server_msgs::srv::Command>::SharedFuture future);
     void updateGoal();
+    void cancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
 
     // Parameters
     std::string waypoints_csv_;
@@ -30,6 +34,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr next_waypoint_id_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr reached_waypoint_id_pub_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav2_pose_client_;
+    rclcpp::Subscription<example_interfaces::msg::Empty>::SharedPtr cancle_nav_handle_;
+    rclcpp::Client<waypoint_server_msgs::srv::Command>::SharedPtr waypoint_server_;
 
     // State variables
     bool retry_once_{false};
@@ -37,7 +43,7 @@ private:
     bool event_enable_{false};
     bool nav2_enable_{true};
     std::vector<std::vector<std::string>> waypoints_data_;
-    geometry_msgs::msg::PoseStamped pose_msg_;
+    geometry_msgs::msg::PoseStamped target_pose;
 };
 
 #endif  // WAYPOINT_MANAGER__WAYPOINT_NAVIGATOR_
