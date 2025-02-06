@@ -16,6 +16,8 @@
   <depend>nav2_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>waypoint_manager_utils</depend>
+  <depend>example_interfaces</depend>
+  <depend>waypoint_server_msgs</depend>
 
   <exec_depend>launch_ros</exec_depend>
 
