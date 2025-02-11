@@ -1,6 +1,7 @@
 #include "waypoint_navigator/waypoint_navigator.hpp"
 
 using namespace waypoint_manager_utils;
+using namespace std::chrono_literals;
 
 WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
 : Node("waypoint_navigator", options)
@@ -31,8 +32,11 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     cancle_nav_handle_ = create_subscription<example_interfaces::msg::Empty>("/cancle_nav", 1,
                             bind(&WaypointNavigator::cancleHandle, this, std::placeholders::_1));
 
-    // ClientNode for waypoint_server
-    waypoint_server_ = create_client<waypoint_server_msgs::srv::Command>("waypoint_command");
+    // Client to request waypoint_event
+    waypoint_event_client_ = create_client<waypoint_event_msgs::srv::Command>("waypoint_event/event_commands");
+    // Sibscriber to recieve wapoint_server results
+    event_result_sub_ = create_subscription<example_interfaces::msg::String>("waypoint_event/event_result", 1,
+        bind(&WaypointNavigator::ReceiveEventResults, this, std::placeholders::_1));
 
     // Load Waypoints from CSV
     waypoints_data_ = loadWaypointsFromCSV(waypoints_csv_);
@@ -68,24 +72,27 @@ void WaypointNavigator::updateGoal()
     next_waypoint_msg.data = waypoint_id_;
     next_waypoint_id_pub_->publish(next_waypoint_msg);
     
-    auto request = std::make_shared<waypoint_server_msgs::srv::Command::Request>();
-
-    request->commands.push_back("update");
+    auto request = std::make_shared<waypoint_event_msgs::srv::Command::Request>();
 
     int data_length = waypoints_data_[waypoint_id_].size();
     for (int i=8; i<data_length; i++)
     {
-        request->commands.push_back(waypoints_data_[waypoint_id_][i]);
+        request->data.push_back(waypoints_data_[waypoint_id_][i]);
     }
 
-    auto future_response = waypoint_server_->async_send_request(
-        request, 
-        std::bind(&WaypointNavigator::responseCallback,this,std::placeholders::_1));
+    while (!waypoint_event_client_->wait_for_service(1s)) {
+        if (!rclcpp::ok()) {
+          return;
+        }
+        RCLCPP_INFO(this->get_logger(), "Service is not available. waiting...");
+      }
+    waypoint_event_client_->async_send_request(request);
+        
 }
 
-void WaypointNavigator::responseCallback(rclcpp::Client<waypoint_server_msgs::srv::Command>::SharedFuture future)
+void WaypointNavigator::ReceiveEventResults(example_interfaces::msg::String::SharedPtr msg)
 {
-    RCLCPP_INFO(get_logger(), future.get()->message.c_str());
+    RCLCPP_INFO(get_logger(), msg->data.c_str());
     sendGoal();
 }
 
