@@ -9,12 +9,36 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/${PROJECT_NAME}.cpp
+  src/host_server.cpp
+  src/wait_server.cpp
+  src/skip_server.cpp
+  src/speak_server.cpp
+  src/map_change_server.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "WaypointServer"
-  EXECUTABLE ${PROJECT_NAME}_node
+  PLUGIN "waypoint_server::HostServer"
+  EXECUTABLE host_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_server::WaitServer"
+  EXECUTABLE wait_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_server::SkipServer"
+  EXECUTABLE skip_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_server::SpeakServer"
+  EXECUTABLE speak_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_server::MapChangeServer"
+  EXECUTABLE map_change_server
 )
 
 target_link_libraries(${PROJECT_NAME})
