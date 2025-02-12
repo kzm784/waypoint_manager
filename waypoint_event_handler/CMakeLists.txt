@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(waypoint_server)
+project(waypoint_event_handler)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -17,27 +17,27 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_server::HostServer"
+  PLUGIN "waypoint_event::HostServer"
   EXECUTABLE host_server
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_server::WaitServer"
+  PLUGIN "waypoint_event::WaitServer"
   EXECUTABLE wait_server
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_server::SkipServer"
+  PLUGIN "waypoint_event::SkipServer"
   EXECUTABLE skip_server
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_server::SpeakServer"
+  PLUGIN "waypoint_event::SpeakServer"
   EXECUTABLE speak_server
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_server::MapChangeServer"
+  PLUGIN "waypoint_event::MapChangeServer"
   EXECUTABLE map_change_server
 )
 
