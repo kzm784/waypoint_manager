@@ -36,7 +36,7 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("waypoint_function/function_commands");
     // Sibscriber to recieve wapoint_server results
     function_result_sub_ = create_subscription<example_interfaces::msg::String>("waypoint_function/function_result", 1,
-        bind(&WaypointNavigator::ReceivefunctionResults, this, std::placeholders::_1));
+        bind(&WaypointNavigator::ReceiveFunctionResults, this, std::placeholders::_1));
 
     // Load Waypoints from CSV
     waypoints_data_ = loadWaypointsFromCSV(waypoints_csv_);
