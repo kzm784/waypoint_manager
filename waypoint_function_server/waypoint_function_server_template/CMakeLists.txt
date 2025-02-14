@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(waypoint_event_handler)
+project(waypoint_function_server_template)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -9,36 +9,18 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/host_server.cpp
-  src/wait_server.cpp
-  src/skip_server.cpp
-  src/speak_server.cpp
-  src/map_change_server.cpp
+  src/sync_template_server.cpp
+  src/async_template_server.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_event::HostServer"
-  EXECUTABLE host_server
+  PLUGIN "waypoint_function::SyncTemplateServer"
+  EXECUTABLE sync_template_server
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_event::WaitServer"
-  EXECUTABLE wait_server
-)
-
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_event::SkipServer"
-  EXECUTABLE skip_server
-)
-
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_event::SpeakServer"
-  EXECUTABLE speak_server
-)
-
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "waypoint_event::MapChangeServer"
-  EXECUTABLE map_change_server
+  PLUGIN "waypoint_function::AsyncTemplateServer"
+  EXECUTABLE async_template_server
 )
 
 target_link_libraries(${PROJECT_NAME})
