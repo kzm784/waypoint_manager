@@ -2,6 +2,12 @@
 
 using namespace std::chrono_literals;
 
+/*--<Change Name>--------------------------------------*/
+/*---Package Name : waypoint_function_server_template--*/
+/*---Class Name : SyncTemplateServer-------------------*/
+/*---Server Name : sync_template-----------------------*/
+/*-----------------------------------------------------*/
+
 waypoint_function::SyncTemplateServer::SyncTemplateServer(const rclcpp::NodeOptions &options) : Node("sync_template_server", options)
 {
     // Subscriber to update when waypoint updated
@@ -22,13 +28,20 @@ waypoint_function::SyncTemplateServer::SyncTemplateServer(const rclcpp::NodeOpti
 
 void waypoint_function::SyncTemplateServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
 {
-    RCLCPP_INFO(get_logger(), "Sync Template Server Update.");
-    /* write upate code when waypoint updated */
+    RCLCPP_INFO(get_logger(), "Sync Template Server Update.");//Change here
+    /*----------------------------------------*/
+    /*-write upate code when waypoint updated-*/
+    /*----------------------------------------*/
 }
 
 void waypoint_function::SyncTemplateServer::Callback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
-    RCLCPP_INFO(get_logger(), "Sync Template Server Called.");
+    RCLCPP_INFO(get_logger(), "Sync Template Server Called.");//Change here
+    
+    /*------------------------*/
+    /*-----write code here----*/
+    /*------------------------*/
+
     // Write Result 
     std::string result_msg ;
     result_msg = "complete"; // Result Message Example 1
@@ -44,7 +57,7 @@ void waypoint_function::SyncTemplateServer::ServerApply()
         if (!rclcpp::ok()) {
           return;
         }
-        RCLCPP_INFO(this->get_logger(), "Service is not available. sync_templateing...");
+        RCLCPP_INFO(this->get_logger(), "Service is not available. waiting...");
     }
     
     // Send Request to Host Server

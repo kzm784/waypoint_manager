@@ -6,6 +6,12 @@
 #include <example_interfaces/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
+/*--<Change Name>--------------------------------------*/
+/*---Package Name : waypoint_function_server_template--*/
+/*---Class Name : AsyncTemplateServer------------------*/
+/*---Server Name : async_template----------------------*/
+/*-----------------------------------------------------*/
+
 namespace waypoint_function 
 {
     class AsyncTemplateServer : public rclcpp::Node

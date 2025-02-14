@@ -6,6 +6,12 @@
 #include <example_interfaces/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
+/*--<Change Name>--------------------------------------*/
+/*---Package Name : waypoint_function_server_template--*/
+/*---Class Name : SyncTemplateServer-------------------*/
+/*---Server Name : sync_template-----------------------*/
+/*-----------------------------------------------------*/
+
 namespace waypoint_function 
 {
     class SyncTemplateServer : public rclcpp::Node
