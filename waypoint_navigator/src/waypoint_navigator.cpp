@@ -32,11 +32,11 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     cancle_nav_handle_ = create_subscription<example_interfaces::msg::Empty>("/cancle_nav", 1,
                             bind(&WaypointNavigator::cancleHandle, this, std::placeholders::_1));
 
-    // Client to request waypoint_event
-    waypoint_event_client_ = create_client<waypoint_event_msgs::srv::Command>("waypoint_event/event_commands");
+    // Client to request waypoint_function
+    waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("waypoint_function/function_commands");
     // Sibscriber to recieve wapoint_server results
-    event_result_sub_ = create_subscription<example_interfaces::msg::String>("waypoint_event/event_result", 1,
-        bind(&WaypointNavigator::ReceiveEventResults, this, std::placeholders::_1));
+    function_result_sub_ = create_subscription<example_interfaces::msg::String>("waypoint_function/function_result", 1,
+        bind(&WaypointNavigator::ReceivefunctionResults, this, std::placeholders::_1));
 
     // Load Waypoints from CSV
     waypoints_data_ = loadWaypointsFromCSV(waypoints_csv_);
@@ -72,7 +72,7 @@ void WaypointNavigator::updateGoal()
     next_waypoint_msg.data = waypoint_id_;
     next_waypoint_id_pub_->publish(next_waypoint_msg);
     
-    auto request = std::make_shared<waypoint_event_msgs::srv::Command::Request>();
+    auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
 
     int data_length = waypoints_data_[waypoint_id_].size();
     for (int i=8; i<data_length; i++)
@@ -80,17 +80,17 @@ void WaypointNavigator::updateGoal()
         request->data.push_back(waypoints_data_[waypoint_id_][i]);
     }
 
-    while (!waypoint_event_client_->wait_for_service(1s)) {
+    while (!waypoint_function_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           return;
         }
         RCLCPP_INFO(this->get_logger(), "Service is not available. waiting...");
       }
-    waypoint_event_client_->async_send_request(request);
+    waypoint_function_client_->async_send_request(request);
         
 }
 
-void WaypointNavigator::ReceiveEventResults(example_interfaces::msg::String::SharedPtr msg)
+void WaypointNavigator::ReceiveFunctionResults(example_interfaces::msg::String::SharedPtr msg)
 {
     RCLCPP_INFO(get_logger(), msg->data.c_str());
     sendGoal();
