@@ -15,7 +15,6 @@ def generate_launch_description():
     sync_template_server_node = Node(
         package='waypoint_function_server_template',
         executable='sync_template_server',
-        namespace='waypoint_function',
         output='screen',
     )
     ld.add_action(sync_template_server_node)
@@ -24,7 +23,6 @@ def generate_launch_description():
     async_template_server_node = Node(
         package='waypoint_function_server_template',
         executable='async_template_server',
-        namespace='waypoint_function',
         output='screen',
     )
     ld.add_action(async_template_server_node)

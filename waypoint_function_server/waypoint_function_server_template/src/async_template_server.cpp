@@ -5,18 +5,18 @@ using namespace std::chrono_literals;
 waypoint_function::AsyncTemplateServer::AsyncTemplateServer(const rclcpp::NodeOptions &options) : Node("async_template_server", options)
 {
     // Subscriber to update when waypoint updated
-    update_sub_ = create_subscription<example_interfaces::msg::Empty>("server_update", 1,
+    update_sub_ = create_subscription<example_interfaces::msg::Empty>("/waypoint_function/server_update", 1,
         bind(&AsyncTemplateServer::Update, this, std::placeholders::_1));
     
-    // Server to Execute This Function
+    // Create Server
     server_ = create_service<waypoint_function_msgs::srv::Command>(
-        SERVER_NAME,
+        "/waypoint_function/" + SERVER_NAME,
         std::bind(&AsyncTemplateServer::Callback, this, std::placeholders::_1, std::placeholders::_2)
     );
-    response_pub_ = create_publisher<example_interfaces::msg::String>("async_response", 10);
+    response_pub_ = create_publisher<example_interfaces::msg::String>("/waypoint_function/async_response", 10);
 
     // Client for Server Apply
-    apply_client_ = create_client<waypoint_function_msgs::srv::Command>("server_apply");
+    apply_client_ = create_client<waypoint_function_msgs::srv::Command>("/waypoint_function/server_apply");
     // Apply Tihs Server to Host Server to make connection
     ServerApply();
 
