@@ -21,8 +21,9 @@ public:
 private:
     void sendGoal();
     void updateWaypoint();
-    void ReceiveFunctionResults(const example_interfaces::msg::String::SharedPtr msg);
     void updateGoal();
+    void SendCommands();
+    void ReceiveFunctionResults(const example_interfaces::msg::String::SharedPtr msg);
     void cancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
 
     // Parameters
@@ -45,6 +46,7 @@ private:
     bool function_enable_{false};
     bool nav2_enable_{true};
     std::vector<std::vector<std::string>> waypoints_data_;
+    std::vector<std::string> function_commands_;
     geometry_msgs::msg::PoseStamped target_pose;
 };
 

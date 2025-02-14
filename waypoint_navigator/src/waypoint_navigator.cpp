@@ -48,13 +48,13 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
 
     // Start waypoint navigation
     updateGoal();
+    sendGoal();
 }
 
 void WaypointNavigator::updateGoal()
 {
     if (waypoints_data_.empty() || waypoint_id_ >= static_cast<int>(waypoints_data_.size())) return;
 
-    // RCLCPP_INFO(get_logger(), "Update waypoint ID: %d", waypoint_id_);
 
     // Create PoseStamped for goal
     target_pose.header.stamp = get_clock()->now();
@@ -72,14 +72,23 @@ void WaypointNavigator::updateGoal()
     next_waypoint_msg.data = waypoint_id_;
     next_waypoint_id_pub_->publish(next_waypoint_msg);
     
-    auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
+    if(function_commands_.size()!=0) SendCommands();
 
+    // Update Function Command
+    function_commands_ = {};
     int data_length = waypoints_data_[waypoint_id_].size();
     for (int i=8; i<data_length; i++)
     {
-        request->data.push_back(waypoints_data_[waypoint_id_][i]);
+        function_commands_.push_back(waypoints_data_[waypoint_id_][i]);
     }
 
+        
+}
+
+void WaypointNavigator::SendCommands()
+{
+    auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
+    request->data = function_commands_;
     while (!waypoint_function_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           return;
@@ -87,7 +96,6 @@ void WaypointNavigator::updateGoal()
         RCLCPP_INFO(this->get_logger(), "Service is not available. waiting...");
       }
     waypoint_function_client_->async_send_request(request);
-        
 }
 
 void WaypointNavigator::ReceiveFunctionResults(example_interfaces::msg::String::SharedPtr msg)
