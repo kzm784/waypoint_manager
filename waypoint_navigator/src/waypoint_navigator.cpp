@@ -72,8 +72,6 @@ void WaypointNavigator::updateGoal()
     next_waypoint_msg.data = waypoint_id_;
     next_waypoint_id_pub_->publish(next_waypoint_msg);
     
-    if(function_commands_.size()!=0) SendCommands();
-
     // Update Function Command
     function_commands_ = {};
     int data_length = waypoints_data_[waypoint_id_].size();
@@ -81,12 +79,12 @@ void WaypointNavigator::updateGoal()
     {
         function_commands_.push_back(waypoints_data_[waypoint_id_][i]);
     }
-
-        
 }
 
 void WaypointNavigator::SendCommands()
 {
+    if (function_commands_.size() == 0) return;
+
     auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
     request->data = function_commands_;
     while (!waypoint_function_client_->wait_for_service(1s)) {
@@ -118,6 +116,7 @@ void WaypointNavigator::updateWaypoint()
         if (!loop_enable_ || (loop_count_ < 1))
         {
             RCLCPP_INFO(get_logger(), "Completed Navigation!");
+            rclcpp::shutdown();
             return;
         }
         else
@@ -147,6 +146,7 @@ void WaypointNavigator::sendGoal()
             switch (result.code)
             {
             case rclcpp_action::ResultCode::SUCCEEDED:
+                SendCommands();
                 updateWaypoint();
                 updateGoal();
                 break;
