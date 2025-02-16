@@ -11,6 +11,24 @@ def generate_launch_description():
 
     ld = LaunchDescription()
 
+    # Host Server Node
+    host_server_node = Node(
+        package='waypoint_function_main_server',
+        executable='host_server',
+        namespace='waypoint_function',
+        output='screen',
+    )
+    ld.add_action(host_server_node)
+
+    # Wait Server Node
+    wait_server_node = Node(
+        package='waypoint_function_main_server',
+        executable='wait_server',
+        namespace='waypoint_function',
+        output='screen'
+    )
+    ld.add_action(wait_server_node)
+
     # Sync Template Server Node
     sync_template_server_node = Node(
         package='waypoint_function_server_template',
