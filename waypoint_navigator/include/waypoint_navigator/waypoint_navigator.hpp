@@ -19,12 +19,13 @@ public:
     explicit WaypointNavigator(const rclcpp::NodeOptions & options);
 
 private:
-    void sendGoal();
-    void updateWaypoint();
-    void updateGoal();
+    void UpdateWaypoint();
+    void UpdateGoal();
+    void SendGoal();
+    void UpdateCommands();
     void SendCommands();
     void ReceiveFunctionResults(const example_interfaces::msg::String::SharedPtr msg);
-    void cancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
+    void CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
 
     // Parameters
     std::string waypoints_csv_;

@@ -48,10 +48,38 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
 
     // Start waypoint navigation
     updateGoal();
+    UpdateCommands();
     sendGoal();
 }
 
-void WaypointNavigator::updateGoal()
+void WaypointNavigator::UpdateWaypoint()
+{
+    // Publish reached waypoint ID
+    std_msgs::msg::Int32 reached_waypoint_msg;
+    reached_waypoint_msg.data = waypoint_id_;
+    reached_waypoint_id_pub_->publish(reached_waypoint_msg);
+
+    waypoint_id_++;
+    if (waypoint_id_ >= static_cast<int>(waypoints_data_.size()))
+    {
+        loop_count_--;
+        if (!loop_enable_ || (loop_count_ < 1))
+        {
+            RCLCPP_INFO(get_logger(), "Completed Navigation!");
+            SendCommands();
+            rclcpp::shutdown();
+            return;
+        }
+        else
+        {
+            RCLCPP_INFO(get_logger(), "Completed a lap, %d laps left.", loop_count_);
+            waypoint_id_ = 0;
+            return;
+        }
+    }
+}
+
+void WaypointNavigator::UpdateGoal()
 {
     if (waypoints_data_.empty() || waypoint_id_ >= static_cast<int>(waypoints_data_.size())) return;
 
@@ -72,6 +100,48 @@ void WaypointNavigator::updateGoal()
     next_waypoint_msg.data = waypoint_id_;
     next_waypoint_id_pub_->publish(next_waypoint_msg);
     
+}
+
+void WaypointNavigator::SendGoal()
+{
+    if (!nav2_pose_client_->wait_for_action_server(std::chrono::seconds(10)))
+    {
+        RCLCPP_WARN(get_logger(), "Navigation server is not available, waiting...");
+        return;
+    }
+
+    auto goal_msg = nav2_msgs::action::NavigateToPose::Goal();
+    goal_msg.pose = target_pose;
+
+    RCLCPP_INFO(get_logger(), "Send Waypoint ID: %d", waypoint_id_ );
+    auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
+    send_goal_options.result_callback =
+        [this](const auto& result) {
+            switch (result.code)
+            {
+            case rclcpp_action::ResultCode::SUCCEEDED:
+                updateWaypoint();
+                updateGoal();
+                SendCommands();
+                UpdateCommands();
+                break;
+
+            case rclcpp_action::ResultCode::ABORTED:
+                break;
+
+            case rclcpp_action::ResultCode::CANCELED:
+                break;
+
+            default:
+                break;
+            }
+        };
+
+    nav2_pose_client_->async_send_goal(goal_msg, send_goal_options);
+}
+
+void WaypointNavigator::UpdateCommands()
+{
     // Update Function Command
     function_commands_ = {};
     int data_length = waypoints_data_[waypoint_id_].size();
@@ -83,7 +153,11 @@ void WaypointNavigator::updateGoal()
 
 void WaypointNavigator::SendCommands()
 {
-    if (function_commands_.size() == 0) return;
+    if(function_commands_.size() == 0)
+    {
+        sendGoal();
+        return;
+    }
 
     auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
     request->data = function_commands_;
@@ -102,71 +176,8 @@ void WaypointNavigator::ReceiveFunctionResults(example_interfaces::msg::String::
     sendGoal();
 }
 
-void WaypointNavigator::updateWaypoint()
-{
-    // Publish reached waypoint ID
-    std_msgs::msg::Int32 reached_waypoint_msg;
-    reached_waypoint_msg.data = waypoint_id_;
-    reached_waypoint_id_pub_->publish(reached_waypoint_msg);
 
-    waypoint_id_++;
-    if (waypoint_id_ >= static_cast<int>(waypoints_data_.size()))
-    {
-        loop_count_--;
-        if (!loop_enable_ || (loop_count_ < 1))
-        {
-            RCLCPP_INFO(get_logger(), "Completed Navigation!");
-            rclcpp::shutdown();
-            return;
-        }
-        else
-        {
-            RCLCPP_INFO(get_logger(), "Completed a lap, %d laps left.", loop_count_);
-            waypoint_id_ = 0;
-            return;
-        }
-    }
-}
-
-void WaypointNavigator::sendGoal()
-{
-    if (!nav2_pose_client_->wait_for_action_server(std::chrono::seconds(10)))
-    {
-        RCLCPP_WARN(get_logger(), "Navigation server is not available, waiting...");
-        return;
-    }
-
-    auto goal_msg = nav2_msgs::action::NavigateToPose::Goal();
-    goal_msg.pose = target_pose;
-
-    RCLCPP_INFO(get_logger(), "Send Waypoint ID: %d", waypoint_id_ );
-    auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
-    send_goal_options.result_callback =
-        [this](const auto& result) {
-            switch (result.code)
-            {
-            case rclcpp_action::ResultCode::SUCCEEDED:
-                SendCommands();
-                updateWaypoint();
-                updateGoal();
-                break;
-
-            case rclcpp_action::ResultCode::ABORTED:
-                break;
-
-            case rclcpp_action::ResultCode::CANCELED:
-                break;
-
-            default:
-                break;
-            }
-        };
-
-    nav2_pose_client_->async_send_goal(goal_msg, send_goal_options);
-}
-
-
-void WaypointNavigator::cancleHandle(const example_interfaces::msg::Empty::SharedPtr msg)
+void WaypointNavigator::CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg)
 {
     RCLCPP_INFO(get_logger(), "Nav2 Cancle Called");
 }
