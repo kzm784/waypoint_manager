@@ -30,7 +30,7 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     nav2_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
     // Nav2 action handle
     cancle_nav_handle_ = create_subscription<example_interfaces::msg::Empty>("/cancle_nav", 1,
-                            bind(&WaypointNavigator::cancleHandle, this, std::placeholders::_1));
+                            bind(&WaypointNavigator::CancleHandle, this, std::placeholders::_1));
 
     // Client to request waypoint_function
     waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("waypoint_function/function_commands");
@@ -47,9 +47,9 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     }
 
     // Start waypoint navigation
-    updateGoal();
+    UpdateGoal();
     UpdateCommands();
-    sendGoal();
+    SendGoal();
 }
 
 void WaypointNavigator::UpdateWaypoint()
@@ -120,8 +120,8 @@ void WaypointNavigator::SendGoal()
             switch (result.code)
             {
             case rclcpp_action::ResultCode::SUCCEEDED:
-                updateWaypoint();
-                updateGoal();
+                UpdateWaypoint();
+                UpdateGoal();
                 SendCommands();
                 UpdateCommands();
                 break;
@@ -155,7 +155,7 @@ void WaypointNavigator::SendCommands()
 {
     if(function_commands_.size() == 0)
     {
-        sendGoal();
+        SendGoal();
         return;
     }
 
@@ -173,7 +173,7 @@ void WaypointNavigator::SendCommands()
 void WaypointNavigator::ReceiveFunctionResults(example_interfaces::msg::String::SharedPtr msg)
 {
     RCLCPP_INFO(get_logger(), msg->data.c_str());
-    sendGoal();
+    SendGoal();
 }
 
 
