@@ -18,13 +18,10 @@ WaypointVisualizer::WaypointVisualizer(const rclcpp::NodeOptions & options)
 
     // ROS 2 Interfaces
     reached_waypoint_id_sub_ = create_subscription<std_msgs::msg::Int32>("next_waypoint_id", 10, std::bind(&WaypointVisualizer::nextWaypointIdCallback, this, std::placeholders::_1));;
-    sphere_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/sphere_markers", 10);
-    text_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/text_markers", 10);
-    line_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/line_markers", 10);
-    arrow_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/arrow_markers", 10);
-
-    // Timer
-    visualization_timer_ = this->create_wall_timer(std::chrono::microseconds(100), std::bind(&WaypointVisualizer::visualizationTimerCallback, this));
+    sphere_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/sphere_markers", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+    text_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/text_markers", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+    line_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/line_markers", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+    arrow_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/arrow_markers", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 
     // Load Waypoints from CSV
     waypoints_data_ = loadWaypointsFromCSV(waypoints_csv_);
@@ -161,84 +158,61 @@ void WaypointVisualizer::createMarkers()
             line_markers_.markers.push_back(line_marker);
         }
     }
-}
 
-void WaypointVisualizer::nextWaypointIdCallback(const std_msgs::msg::Int32::SharedPtr msg)
-{
-    int32_t new_waypoint_id = msg->data;
-
-    if (current_waypoint_id_ != -1)
-    {
-        for (auto &marker : sphere_markers_.markers)
-        {
-            if (marker.id == current_waypoint_id_)
-            {
-                marker.color.r = 0.0;
-                marker.color.g = 1.0;
-                marker.color.b = 0.0;
-            }
-        }
-
-        for (auto &text_marker : text_markers_.markers)
-        {
-            if (text_marker.id == current_waypoint_id_)
-            {
-                text_marker.color.r = 0.0;
-                text_marker.color.g = 0.0;
-                text_marker.color.b = 0.0;
-            }
-        }
-
-        for (auto &line_marker : line_markers_.markers)
-        {
-            if (line_marker.id == current_waypoint_id_)
-            {
-                line_marker.color.r = 0.0;
-                line_marker.color.g = 1.0;
-                line_marker.color.b = 0.0;
-            }
-        }
-    }
-
-    current_waypoint_id_ = new_waypoint_id;
-
-    for (auto &marker : sphere_markers_.markers)
-    {
-        if (marker.id == new_waypoint_id)
-        {
-            marker.color.r = 1.0;
-            marker.color.g = 0.0;
-            marker.color.b = 0.0;
-        }
-    }
-
-    for (auto &text_marker : text_markers_.markers)
-    {
-        if (text_marker.id == new_waypoint_id)
-        {
-            text_marker.color.r = 1.0;
-            text_marker.color.g = 0.0;
-            text_marker.color.b = 0.0;
-        }
-    }
-
-    for (auto &line_marker : line_markers_.markers)
-    {
-        if (line_marker.id == new_waypoint_id)
-        {
-            line_marker.color.r = 1.0;
-            line_marker.color.g = 0.0;
-            line_marker.color.b = 0.0;
-        }
-    }
-}
-
-void WaypointVisualizer::visualizationTimerCallback()
-{
     sphere_markers_pub_->publish(sphere_markers_);
     text_markers_pub_->publish(text_markers_);
     line_markers_pub_->publish(line_markers_);
     arrow_markers_pub_->publish(arrow_markers_);
+}
+
+void WaypointVisualizer::nextWaypointIdCallback(const std_msgs::msg::Int32::SharedPtr msg)
+{
+    int new_id = msg->data;
+
+    if (current_waypoint_id_ >= 0 && current_waypoint_id_ < (int)sphere_markers_.markers.size()) {
+        auto &prev_sphere = sphere_markers_.markers[current_waypoint_id_];
+        prev_sphere.color.r = 0.0;
+        prev_sphere.color.g = 1.0;
+        prev_sphere.color.b = 0.0;
+
+        auto &prev_text = text_markers_.markers[current_waypoint_id_];
+        prev_text.color.r = 0.0;
+        prev_text.color.g = 0.0;
+        prev_text.color.b = 0.0;
+
+        if (current_waypoint_id_ > 0) {
+            auto &prev_line = line_markers_.markers[current_waypoint_id_ - 1];
+            prev_line.color.r = 0.0;
+            prev_line.color.g = 1.0;
+            prev_line.color.b = 0.0;
+        }
+    }
+
+    if (new_id >= 0 && new_id < (int)sphere_markers_.markers.size()) {
+        auto &new_sphere = sphere_markers_.markers[new_id];
+        new_sphere.color.r = 1.0;
+        new_sphere.color.g = 0.0;
+        new_sphere.color.b = 0.0;
+
+        auto &new_text = text_markers_.markers[new_id];
+        new_text.color.r = 1.0;
+        new_text.color.g = 0.0;
+        new_text.color.b = 0.0;
+
+        if (new_id > 0 && new_id < (int)line_markers_.markers.size()+1) {
+            auto &new_line = line_markers_.markers[new_id - 1];
+            new_line.color.r = 1.0;
+            new_line.color.g = 0.0;
+            new_line.color.b = 0.0;
+        }
+    }
+
+    sphere_markers_pub_->publish(sphere_markers_);
+    text_markers_pub_->publish(text_markers_);
+    line_markers_pub_->publish(line_markers_);
+    arrow_markers_pub_->publish(arrow_markers_);
+
+    current_waypoint_id_ = new_id;
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

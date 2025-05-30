@@ -31,10 +31,9 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr text_markers_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr line_markers_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr arrow_markers_pub_;
-    rclcpp::TimerBase::SharedPtr visualization_timer_;
 
     // State variables
-    int32_t current_waypoint_id_;
+    int32_t current_waypoint_id_{-1};
     std::vector<std::vector<std::string>> waypoints_data_;
     visualization_msgs::msg::MarkerArray sphere_markers_;
     visualization_msgs::msg::MarkerArray text_markers_;
