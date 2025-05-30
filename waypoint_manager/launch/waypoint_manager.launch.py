@@ -29,6 +29,16 @@ def generate_launch_description():
                 'config_waypoint_manager.yaml'
         )
     )
+    
+    waypoint_visualizer_node = Node(
+        package="waypoint_visualizer",
+        executable='waypoint_visualizer_node',
+        name='waypoint_visualizer_node',
+        output='screen',
+        parameters=[waypoint_manager_config, {
+                'waypoints_csv': waypoints_csv_path
+        }]
+    )
 
     waypoint_navigator_node = Node(
         package='waypoint_navigator',
@@ -39,18 +49,9 @@ def generate_launch_description():
                 'waypoints_csv': waypoints_csv_path
         }]
     )
-
-    waypoint_visualizer_node = Node(
-        package="waypoint_visualizer",
-        executable='waypoint_visualizer_node',
-        name='waypoint_visualizer_node',
-        output='screen',
-        parameters=[waypoint_manager_config, {
-                'waypoints_csv': waypoints_csv_path
-        }]
-    )
     
-    ld.add_action(waypoint_navigator_node)
     ld.add_action(waypoint_visualizer_node)
+    ld.add_action(waypoint_navigator_node)
+
 
     return ld
