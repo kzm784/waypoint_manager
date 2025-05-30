@@ -19,11 +19,13 @@ public:
     explicit WaypointNavigator(const rclcpp::NodeOptions & options);
 
 private:
-    void sendGoal();
-    void updateWaypoint();
+    void UpdateWaypoint();
+    void UpdateGoal();
+    void SendGoal();
+    void UpdateCommands();
+    void SendCommands();
     void ReceiveFunctionResults(const example_interfaces::msg::String::SharedPtr msg);
-    void updateGoal();
-    void cancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
+    void CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
 
     // Parameters
     std::string waypoints_csv_;
@@ -45,6 +47,7 @@ private:
     bool function_enable_{false};
     bool nav2_enable_{true};
     std::vector<std::vector<std::string>> waypoints_data_;
+    std::vector<std::string> function_commands_;
     geometry_msgs::msg::PoseStamped target_pose;
 };
 
