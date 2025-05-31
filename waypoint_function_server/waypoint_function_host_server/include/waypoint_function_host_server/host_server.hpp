@@ -1,11 +1,11 @@
-#ifndef WAYPOINT_MANAGER__WAYPOINT_FUNCTION_MAIN_SERVER__HOST_SERVER
-#define WAYPOINT_MANAGER__WAYPOINT_FUNCTION_MAIN_SERVER__HOST_SERVER
+#ifndef WAYPOINT_MANAGER__WAYPOINT_FUNCTION_HOST_SERVER
+#define WAYPOINT_MANAGER__WAYPOINT_FUNCTION_HOST_SERVER
 
 #include <rclcpp/rclcpp.hpp>
 #include <example_interfaces/msg/string.hpp>
 #include <example_interfaces/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
-#include <waypoint_function_main_server/server_handle.hpp>
+#include <waypoint_function_host_server/server_handle.hpp>
 
 namespace waypoint_function 
 {
@@ -40,4 +40,4 @@ namespace waypoint_function
     };
 }
 
-#endif  // WAYPOINT_MANAGER__WAYPOINT_FUNCTION_MAIN_SERVER__HOST_SERVER
+#endif  // WAYPOINT_MANAGER__WAYPOINT_FUNCTION_HOST_SERVER
