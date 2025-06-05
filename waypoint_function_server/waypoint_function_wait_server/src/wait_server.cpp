@@ -1,4 +1,4 @@
-#include "waypoint_function_main_server/wait_server.hpp"
+#include "waypoint_function_wait_server/wait_server.hpp"
 
 using namespace std::chrono_literals;
 
