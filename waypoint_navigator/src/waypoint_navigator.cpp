@@ -33,9 +33,9 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
                             bind(&WaypointNavigator::CancleHandle, this, std::placeholders::_1));
 
     // Client to request waypoint_function
-    waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("waypoint_function/function_commands");
+    waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("function_commands");
     // Sibscriber to recieve wapoint_server results
-    function_result_sub_ = create_subscription<example_interfaces::msg::String>("waypoint_function/function_result", 1,
+    function_result_sub_ = create_subscription<example_interfaces::msg::String>("function_result", 1,
         bind(&WaypointNavigator::ReceiveFunctionResults, this, std::placeholders::_1));
 
     // Load Waypoints from CSV
@@ -120,6 +120,7 @@ void WaypointNavigator::SendGoal()
             switch (result.code)
             {
             case rclcpp_action::ResultCode::SUCCEEDED:
+                RCLCPP_INFO(get_logger(), "Nav2 Result Satus: SUCCEEDED");
                 UpdateWaypoint();
                 UpdateGoal();
                 SendCommands();
@@ -127,9 +128,13 @@ void WaypointNavigator::SendGoal()
                 break;
 
             case rclcpp_action::ResultCode::ABORTED:
+                RCLCPP_INFO(get_logger(), "Nav2 Result Satus: ABORTED");
+                UpdateGoal();
+                SendGoal();
                 break;
 
             case rclcpp_action::ResultCode::CANCELED:
+                RCLCPP_INFO(get_logger(), "Nav2 Result Satus: CANCELED");
                 break;
 
             default:
