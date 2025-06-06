@@ -24,7 +24,9 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
 
     // Publishers
     next_waypoint_id_pub_ = create_publisher<std_msgs::msg::Int32>("next_waypoint_id", 1);
+    next_waypoint_msg_pub_ = create_publisher<geometry_msgs::msg::PoseStamped>("next_waypoint_msg", 1);
     reached_waypoint_id_pub_ = create_publisher<std_msgs::msg::Int32>("reached_waypoint_id", 1);
+    reached_waypoint_msg_pub_ = create_publisher<geometry_msgs::msg::PoseStamped>("reached_waypoint_msg", 1);
 
     // Action client for navigation
     nav2_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
@@ -54,10 +56,11 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
 
 void WaypointNavigator::UpdateWaypoint()
 {
-    // Publish reached waypoint ID
+    // Publish reached waypoint ID and Msg
     std_msgs::msg::Int32 reached_waypoint_msg;
     reached_waypoint_msg.data = waypoint_id_;
     reached_waypoint_id_pub_->publish(reached_waypoint_msg);
+    reached_waypoint_msg_pub_->publish(target_pose_);
 
     waypoint_id_++;
     if (waypoint_id_ >= static_cast<int>(waypoints_data_.size()))
@@ -85,21 +88,21 @@ void WaypointNavigator::UpdateGoal()
 
 
     // Create PoseStamped for goal
-    target_pose.header.stamp = get_clock()->now();
-    target_pose.header.frame_id = "map";
-    target_pose.pose.position.x = std::stof(waypoints_data_[waypoint_id_][1]);
-    target_pose.pose.position.y = std::stof(waypoints_data_[waypoint_id_][2]);
-    target_pose.pose.position.z = std::stof(waypoints_data_[waypoint_id_][3]);
-    target_pose.pose.orientation.x = std::stof(waypoints_data_[waypoint_id_][4]);
-    target_pose.pose.orientation.y = std::stof(waypoints_data_[waypoint_id_][5]);
-    target_pose.pose.orientation.z = std::stof(waypoints_data_[waypoint_id_][6]);
-    target_pose.pose.orientation.w = std::stof(waypoints_data_[waypoint_id_][7]);
+    target_pose_.header.stamp = get_clock()->now();
+    target_pose_.header.frame_id = "map";
+    target_pose_.pose.position.x = std::stof(waypoints_data_[waypoint_id_][1]);
+    target_pose_.pose.position.y = std::stof(waypoints_data_[waypoint_id_][2]);
+    target_pose_.pose.position.z = std::stof(waypoints_data_[waypoint_id_][3]);
+    target_pose_.pose.orientation.x = std::stof(waypoints_data_[waypoint_id_][4]);
+    target_pose_.pose.orientation.y = std::stof(waypoints_data_[waypoint_id_][5]);
+    target_pose_.pose.orientation.z = std::stof(waypoints_data_[waypoint_id_][6]);
+    target_pose_.pose.orientation.w = std::stof(waypoints_data_[waypoint_id_][7]);
 
-    // Publish next waypoint ID
+    // Publish next waypoint ID and Msg
     std_msgs::msg::Int32 next_waypoint_msg;
     next_waypoint_msg.data = waypoint_id_;
-    next_waypoint_id_pub_->publish(next_waypoint_msg);
-    
+    next_waypoint_msg_pub_->publish(target_pose_);
+    next_waypoint_id_pub_->publish(next_waypoint_msg);    
 }
 
 void WaypointNavigator::SendGoal()
@@ -111,7 +114,7 @@ void WaypointNavigator::SendGoal()
     }
 
     auto goal_msg = nav2_msgs::action::NavigateToPose::Goal();
-    goal_msg.pose = target_pose;
+    goal_msg.pose = target_pose_;
 
     RCLCPP_INFO(get_logger(), "Send Waypoint ID: %d", waypoint_id_ );
     auto send_goal_options = rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();

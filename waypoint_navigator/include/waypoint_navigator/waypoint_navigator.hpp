@@ -35,7 +35,9 @@ private:
 
     // ROS 2 Interfaces
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr next_waypoint_id_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr next_waypoint_msg_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr reached_waypoint_id_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr reached_waypoint_msg_pub_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav2_pose_client_;
     rclcpp::Subscription<example_interfaces::msg::Empty>::SharedPtr cancle_nav_handle_;
     rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedPtr waypoint_function_client_;
@@ -48,7 +50,7 @@ private:
     bool nav2_enable_{true};
     std::vector<std::vector<std::string>> waypoints_data_;
     std::vector<std::string> function_commands_;
-    geometry_msgs::msg::PoseStamped target_pose;
+    geometry_msgs::msg::PoseStamped target_pose_;
 };
 
 #endif  // WAYPOINT_MANAGER__WAYPOINT_NAVIGATOR_
