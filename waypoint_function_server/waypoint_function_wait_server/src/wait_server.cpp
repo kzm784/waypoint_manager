@@ -30,6 +30,7 @@ void waypoint_function::WaitServer::ServerApply()
     auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
     request->data.push_back(COMMAND_HEADER);
     request->data.push_back(SERVER_NAME);
+    request->data.push_back(EXECUTE_STATE);
     auto result = server_apply_->async_send_request(request);
 
     auto returnCode = rclcpp::spin_until_future_complete(

@@ -6,6 +6,8 @@
 #include <example_interfaces/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
+using namespace std;
+
 /*--<Change Name>--------------------------------------*/
 /*---Package Name : waypoint_function_server_template--*/
 /*---Class Name : AsyncTemplateServer------------------*/
@@ -21,8 +23,8 @@ namespace waypoint_function
 
         private:
             void Update(const example_interfaces::msg::Empty::SharedPtr msg);
-            void Callback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-                            std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
+            void Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+                            shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
             void TimerCallback();
             void SendAsyncResponse();
             void ServerApply();
@@ -33,9 +35,10 @@ namespace waypoint_function
             rclcpp::Publisher<example_interfaces::msg::String>::SharedPtr response_pub_;
             rclcpp::TimerBase::SharedPtr timer_;
 
-            std::string COMMAND_HEADER = "async_template";
-            std::string SERVER_NAME = "async_template_server";
-            std::string COMMAND_EXAMPLE = "async_template:";
+            string COMMAND_HEADER = "async_template";
+            string SERVER_NAME = "async_template_server";
+            string EXECUTE_STATE = "end";
+            string COMMAND_EXAMPLE = "async_template:";
 
             bool _isAvalable;
     };

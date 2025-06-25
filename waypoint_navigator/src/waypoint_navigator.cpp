@@ -37,8 +37,10 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     // Client to request waypoint_function
     waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("function_commands");
     // Sibscriber to recieve wapoint_server results
-    function_result_sub_ = create_subscription<example_interfaces::msg::String>("function_result", 1,
-        bind(&WaypointNavigator::ReceiveFunctionResults, this, std::placeholders::_1));
+    function_results_reciever_ = create_service<waypoint_function_msgs::srv::Command>(
+        "function_results",
+        std::bind(&WaypointNavigator::ReceiveFunctionResults, this, std::placeholders::_1, std::placeholders::_2)
+    );
 
     // Load Waypoints from CSV
     waypoints_data_ = loadWaypointsFromCSV(waypoints_csv_);
@@ -51,10 +53,10 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     // Start waypoint navigation
     UpdateGoal();
     UpdateCommands();
-    SendGoal();
+    SendCommands("start");
 }
 
-void WaypointNavigator::UpdateWaypoint()
+void WaypointNavigator::UpdateWaypointID()
 {
     // Publish reached waypoint ID and Msg
     std_msgs::msg::Int32 reached_waypoint_msg;
@@ -69,7 +71,6 @@ void WaypointNavigator::UpdateWaypoint()
         if (!loop_enable_ || (loop_count_ < 1))
         {
             RCLCPP_INFO(get_logger(), "Completed Navigation!");
-            SendCommands();
             rclcpp::shutdown();
             return;
         }
@@ -124,16 +125,12 @@ void WaypointNavigator::SendGoal()
             {
             case rclcpp_action::ResultCode::SUCCEEDED:
                 RCLCPP_INFO(get_logger(), "Nav2 Result Satus: SUCCEEDED");
-                UpdateWaypoint();
-                UpdateGoal();
-                SendCommands();
-                UpdateCommands();
+                SendCommands("end");
                 break;
 
             case rclcpp_action::ResultCode::ABORTED:
                 RCLCPP_INFO(get_logger(), "Nav2 Result Satus: ABORTED");
-                UpdateGoal();
-                SendGoal();
+                ToSameWaypoint();
                 break;
 
             case rclcpp_action::ResultCode::CANCELED:
@@ -159,7 +156,7 @@ void WaypointNavigator::UpdateCommands()
     }
 }
 
-void WaypointNavigator::SendCommands()
+void WaypointNavigator::SendCommands(string execute_state)
 {
     if(function_commands_.size() == 0)
     {
@@ -169,6 +166,7 @@ void WaypointNavigator::SendCommands()
 
     auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
     request->data = function_commands_;
+    request->execute_state = execute_state;
     while (!waypoint_function_client_->wait_for_service(1s)) {
         if (!rclcpp::ok()) {
           return;
@@ -178,16 +176,34 @@ void WaypointNavigator::SendCommands()
     waypoint_function_client_->async_send_request(request);
 }
 
-void WaypointNavigator::ReceiveFunctionResults(example_interfaces::msg::String::SharedPtr msg)
+void WaypointNavigator::ReceiveFunctionResults(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
-    RCLCPP_INFO(get_logger(), msg->data.c_str());
-    SendGoal();
+    for(auto &result_msg : request->data)
+    {
+        RCLCPP_INFO(get_logger(), result_msg.c_str());
+    }
+    
+    if(request->execute_state == "start") SendGoal();
+    else if(request->execute_state == "end") ToNextWaypoint();
 }
-
 
 void WaypointNavigator::CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg)
 {
     RCLCPP_INFO(get_logger(), "Nav2 Cancle Called");
+}
+
+void WaypointNavigator::ToNextWaypoint()
+{
+    UpdateWaypointID();
+    UpdateGoal();
+    UpdateCommands();
+    SendCommands("start");
+}
+
+void WaypointNavigator::ToSameWaypoint()
+{
+    UpdateGoal();
+    SendGoal();
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

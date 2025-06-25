@@ -7,6 +7,8 @@
 
 #include <unistd.h>
 
+using namespace std;
+
 namespace waypoint_function 
 {
     class WaitServer : public rclcpp::Node
@@ -16,8 +18,8 @@ namespace waypoint_function
 
         private:
             void ServerApply();
-            void Callback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-                            std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
+            void Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+                            shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
             void Delay(int sleep_time);
         
             rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr server_;
@@ -25,8 +27,9 @@ namespace waypoint_function
             rclcpp::Publisher<example_interfaces::msg::String>::SharedPtr response_pub_;
             rclcpp::TimerBase::SharedPtr timer_;
 
-            std::string COMMAND_HEADER = "wait";
-            std::string SERVER_NAME = "wait_server";
+            string COMMAND_HEADER = "wait";
+            string SERVER_NAME = "wait_server";
+            string EXECUTE_STATE = "start";
     };
 }
 

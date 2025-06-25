@@ -13,19 +13,23 @@
 #include <example_interfaces/msg/string.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
+using namespace std;
+
 class WaypointNavigator : public rclcpp::Node
 {
 public:
     explicit WaypointNavigator(const rclcpp::NodeOptions & options);
 
 private:
-    void UpdateWaypoint();
+    void UpdateWaypointID();
     void UpdateGoal();
     void SendGoal();
     void UpdateCommands();
-    void SendCommands();
-    void ReceiveFunctionResults(const example_interfaces::msg::String::SharedPtr msg);
+    void SendCommands(string execute_state);
+    void ReceiveFunctionResults(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
     void CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
+    void ToNextWaypoint();
+    void ToSameWaypoint();
 
     // Parameters
     std::string waypoints_csv_;
@@ -41,7 +45,7 @@ private:
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav2_pose_client_;
     rclcpp::Subscription<example_interfaces::msg::Empty>::SharedPtr cancle_nav_handle_;
     rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedPtr waypoint_function_client_;
-    rclcpp::Subscription<example_interfaces::msg::String>::SharedPtr function_result_sub_;
+    rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr function_results_reciever_;
 
     // State variables
     bool retry_once_{false};

@@ -6,6 +6,8 @@
 #include <example_interfaces/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
+using namespace std;
+
 /*--<Change Name>--------------------------------------*/
 /*---Package Name : waypoint_function_server_template--*/
 /*---Class Name : SyncTemplateServer-------------------*/
@@ -21,17 +23,18 @@ namespace waypoint_function
 
         private:
             void Update(const example_interfaces::msg::Empty::SharedPtr msg);
-            void Callback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-                            std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
+            void Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+                            shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
             void ServerApply();
         
             rclcpp::Subscription<example_interfaces::msg::Empty>::SharedPtr update_sub_;
             rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedPtr apply_client_;
             rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr server_;
 
-            std::string COMMAND_HEADER = "sync_template";
-            std::string SERVER_NAME = "sync_template_server";
-            std::string COMMAND_EXAMPLE = "sync_template:10:/path/to/something";
+            string COMMAND_HEADER = "sync_template";
+            string SERVER_NAME = "sync_template_server";
+            string EXECUTE_STATE = "end";
+            string COMMAND_EXAMPLE = "sync_template:10:/path/to/something";
     };
 }
 

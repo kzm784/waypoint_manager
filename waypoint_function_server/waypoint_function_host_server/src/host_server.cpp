@@ -7,7 +7,7 @@ waypoint_function::HostServer::HostServer(const rclcpp::NodeOptions & options) :
     // Server to Accept Apply and Create Function Server Cilent
     accept_apply_server_ = create_service<waypoint_function_msgs::srv::Command>(
         "server_apply",
-        std::bind(&HostServer::ServerApplyAcception, this, std::placeholders::_1, std::placeholders::_2)
+        bind(&HostServer::ServerApplyAcception, this, placeholders::_1, placeholders::_2)
     );
 
     // Publisher to Update Function Servers
@@ -16,22 +16,24 @@ waypoint_function::HostServer::HostServer(const rclcpp::NodeOptions & options) :
     // Server to Accept Function Commands from Waypoint Navigator
     function_server_ = create_service<waypoint_function_msgs::srv::Command>(
         "function_commands",
-        std::bind(&HostServer::Callback, this, std::placeholders::_1, std::placeholders::_2)
+        bind(&HostServer::Callback, this, placeholders::_1, placeholders::_2)
     );
     // Subscriber to Recieve Async Response from Function Server 
     function_async_response_ = create_subscription<example_interfaces::msg::String>("async_response", 1,
-        bind(&HostServer::ReceiveAsyncResponse, this, std::placeholders::_1));
+        bind(&HostServer::ReceiveAsyncResponse, this, placeholders::_1));
     
     // Publisher to Send Functions Result to Waypoint Navigator
-    function_result_pub_ = create_publisher<example_interfaces::msg::String>("function_result", 10);
+    function_result_pub_ = create_publisher<example_interfaces::msg::String>("function_results", 10);
+    function_results_client_ = create_client<waypoint_function_msgs::srv::Command>("function_results");
 }
 
 
-void waypoint_function::HostServer::ServerApplyAcception(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::HostServer::ServerApplyAcception(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
     ServerHandle handle_tmp;
     handle_tmp.command_header = request->data[0];
     handle_tmp.server_name = request->data[1]; 
+    handle_tmp.execute_state = request->data[2];
     // Check Server Uniqueness
     for (ServerHandle &handle : server_handles_)
     {
@@ -54,18 +56,20 @@ void waypoint_function::HostServer::ServerApplyAcception(const std::shared_ptr<w
 }
 
 
-void waypoint_function::HostServer::Callback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::HostServer::Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request, shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
-    // Notify Waypoint Updated to Function Servers
-    ServerUpdate();
-
+    execute_state_ = request->execute_state;
     function_commands_ = request->data;
     commands_size_ = function_commands_.size();
 
-    result_msg_  = "Server Result{ ";
+    // Notify Waypoint Updated to Function Servers
+    if(execute_state_ == "start") ServerUpdate();
+
+    results_msg_ = {};
+    results_msg_.push_back("===Results===" + execute_state_);
     if(commands_size_ < 1)
     {
-        result_msg_ += "Non Server Selected ";
+        results_msg_.push_back(" Non Server Selected ");
         SendFunctionResults();
     }
     else
@@ -83,32 +87,31 @@ void waypoint_function::HostServer::ServerCall()
     // Call ServerHandle by Command Header
     for(ServerHandle &handle : server_handles_)
     {
-        if(handle.command_header == command_data[0])
+        if(handle.command_header == command_data[0] && handle.execute_state == execute_state_)
         {
             auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
             request->data = command_data;
             // Send Request
             auto future_response = handle.client->async_send_request(
                 request, 
-                std::bind(&HostServer::ReceiveSyncResponse,this,std::placeholders::_1));
+                bind(&HostServer::ReceiveSyncResponse,this,placeholders::_1));
             return;
         }
     }
-    result_msg_ += "Wrong Command->" + function_commands_[current_command_index_] + ", " ;
     RunNextCommand();
 }
 
 void waypoint_function::HostServer::ReceiveSyncResponse(rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedFuture future)
 {
-    std::string msg = future.get()->message;
+    string msg = future.get()->message;
     if(msg == "AsyncResponse") return; // Recieve "AsyncResponse" means FunctionServer Use AsyncResponse 
-    result_msg_ += msg + ", ";
+    results_msg_.push_back(msg);
     RunNextCommand();
 }
 
 void waypoint_function::HostServer::ReceiveAsyncResponse(const example_interfaces::msg::String::SharedPtr msg)
 {
-    result_msg_ += msg->data + ", ";
+    results_msg_.push_back(msg->data);
     RunNextCommand();
 }
 
@@ -122,11 +125,19 @@ void waypoint_function::HostServer::RunNextCommand()
 
 void waypoint_function::HostServer::SendFunctionResults()
 {
-    result_msg_ += "}";
+    results_msg_.push_back("=============");
+
     // Send Function Results to Waypoint Navigator
-    example_interfaces::msg::String msg;
-    msg.data = result_msg_;
-    function_result_pub_->publish(msg);
+    auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
+    request->data = results_msg_;
+    request->execute_state = execute_state_;
+    while (!function_results_client_->wait_for_service(1s)) {
+        if (!rclcpp::ok()) {
+          return;
+        }
+        RCLCPP_INFO(this->get_logger(), "Service is not available. waiting...");
+      }
+    function_results_client_->async_send_request(request);
 }
 
 
@@ -137,13 +148,13 @@ void waypoint_function::HostServer::ServerUpdate()
 }
 
 
-std::vector<std::string> waypoint_function::HostServer::Command_Split(std::string &command_line)
+vector<string> waypoint_function::HostServer::Command_Split(string &command_line)
 {
     // Split command_line by ":"
-    std::vector<std::string> command;
-    std::stringstream ss(command_line);
-    std::string item;
-    while (std::getline(ss, item, ':')) {
+    vector<string> command;
+    stringstream ss(command_line);
+    string item;
+    while (getline(ss, item, ':')) {
         command.push_back(item);
     }
     return command;
