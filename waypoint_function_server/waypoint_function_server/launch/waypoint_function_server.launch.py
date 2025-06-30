@@ -26,6 +26,14 @@ def generate_launch_description():
         output='screen',
     )
     ld.add_action(wait_server_node)
+
+    test_server_node = Node(
+        package="waypoint_function_test_server",
+        executable='test_server',
+        name='test_server',
+        output='screen',
+    )
+    ld.add_action(test_server_node)
     
     async_template_server_node = Node(
         package="waypoint_function_server_template",
