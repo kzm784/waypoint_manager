@@ -7,15 +7,21 @@
 
 using namespace std;
 
-class TestServer : public waypoint_function::FunctionServer()
+namespace waypoint_function
 {
-    public:
-        explicit TestServer(const rclcpp::NodeOptions &options);
+    class TestServer : public waypoint_function::FunctionServer
+    {
+        public:
+            explicit TestServer(const rclcpp::NodeOptions &options);
+            void Update(const example_interfaces::msg::Empty::SharedPtr msg) override;
+            void Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+                    shared_ptr<waypoint_function_msgs::srv::Command::Response> response) override;
 
-    private:
-        string COMMAND_HEADER = "test";
-        string SERVER_NAME = "test_server";
-        string EXECUTE_STATE = "start";
-};
+        private:
+            string COMMAND_HEADER = "test";
+            string SERVER_NAME = "test_server";
+            string EXECUTE_STATE = "start";
+    };
+}
 
 #endif  // WAYPOINT_MANAGER__WAYPOINT_FUNCTION_TEST_SERVER

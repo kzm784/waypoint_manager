@@ -5,12 +5,13 @@ waypoint_function::TestServer::TestServer(const rclcpp::NodeOptions &options) : 
     RCLCPP_INFO(this->get_logger(), "Test Server Start.");
 }
 
-void waypoint_function::TestServer::Update() override
+void waypoint_function::TestServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
 {
     RCLCPP_INFO(this->get_logger(), "Update Called");
 }
 
-void waypoint_function::TestServer::Callback() override
+void waypoint_function::TestServer::Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+        shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
     RCLCPP_INFO(this->get_logger(), "Test Server Callback awake");
     string msg = "test_server:complete";

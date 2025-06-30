@@ -7,7 +7,7 @@ using namespace std;
 
 namespace waypoint_function
 {
-    class FunctionServer : rclcpp::Node 
+    class FunctionServer : public rclcpp::Node 
     {
         public:
             explicit FunctionServer(string server_name, string command_header, string execute_state, const rclcpp::NodeOptions &options);
