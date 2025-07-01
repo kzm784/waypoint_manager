@@ -15,7 +15,7 @@
   <depend>example_interfaces</depend>
   <depend>std_msgs</depend>
   <depend>waypoint_function_msgs</depend>
-  <!-- <depend>waypoint_function_server_template</depend> -->
+  <depend>waypoint_function_server</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

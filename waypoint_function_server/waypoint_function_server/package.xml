@@ -9,12 +9,6 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>waypoint_function_host_server</depend>
-
-  <depend>waypoint_function_wait_server</depend>
-  <depend>waypoint_function_test_server</depend>
-  <depend>waypoint_function_server_template</depend>
-
   <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

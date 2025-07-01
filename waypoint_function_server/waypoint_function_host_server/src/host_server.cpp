@@ -104,7 +104,7 @@ void waypoint_function::HostServer::ServerCall()
 void waypoint_function::HostServer::ReceiveSyncResponse(rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedFuture future)
 {
     string msg = future.get()->message;
-    if(msg == "AsyncResponse") return; // Recieve "AsyncResponse" means FunctionServer Use AsyncResponse 
+    if(msg == "AsyncResponse" || msg == "") return; // when Recieve "AsyncResponse" or null message "", Use AsyncResponse 
     results_msg_.push_back(msg);
     RunNextCommand();
 }

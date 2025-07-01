@@ -1,39 +1,31 @@
 #include "waypoint_function_test_server/test_server.hpp"
 
-NodeBase::NodeBase(const std::string &node_name,  const rclcpp::NodeOptions& options): Node(node_name, options) {
-    RCLCPP_INFO(this->get_logger(), "NodeBase initialized with name: %s", node_name.c_str());
-  }
+TestServer::TestServer( const rclcpp::NodeOptions& options): FunctionServerNode("test_server_node", options) 
+{
+  ServerApply(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE);
 
-TestNode::TestNode( const rclcpp::NodeOptions& options): NodeBase("test_node", options) {
-    publisher_ = this->create_publisher<std_msgs::msg::String>("test_topic", 10);
+  // timer_ = this->create_wall_timer(
+  //   1000ms, std::bind(&TestServer::timer_callback, this));
+}
 
-    timer_ = this->create_wall_timer(
-      1000ms, std::bind(&TestNode::timer_callback, this));
-  }
+void TestServer::timer_callback()
+{
+  RCLCPP_INFO(this->get_logger(), "Hello from TestServer!");
+}
 
-  void TestNode::timer_callback() {
-    auto message = std_msgs::msg::String();
-    message.data = "Hello from TestNode!";
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-    publisher_->publish(message);
-  }
+void TestServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
+{
+    RCLCPP_INFO(this->get_logger(), "Update Called");
+}
 
-// waypoint_function::TestServer::TestServer(const rclcpp::NodeOptions &options) : FunctionServer(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE, options)
-// {
-//     RCLCPP_INFO(this->get_logger(), "Test Server Start.");
-// }
+void TestServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+        std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+{
+    RCLCPP_INFO(this->get_logger(), "Test Server Callback awake");
+    std::string msg = "test_server:complete";
+    response->message = "test:complete";
+    // SendResponse(msg);
+}
 
-// void waypoint_function::TestServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
-// {
-//     RCLCPP_INFO(this->get_logger(), "Update Called");
-// }
-
-// void waypoint_function::TestServer::Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-//         shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
-// {
-//     RCLCPP_INFO(this->get_logger(), "Test Server Callback awake");
-//     string msg = "test_server:complete";
-//     SendResponse(msg);
-// }
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(TestNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(TestServer)
