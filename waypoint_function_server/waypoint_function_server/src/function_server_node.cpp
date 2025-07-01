@@ -1,9 +1,7 @@
 #include "waypoint_function_server/function_server_node.hpp"
 
-FunctionServerNode::FunctionServerNode(const std::string &server_name, const rclcpp::NodeOptions &options): Node(server_name, options) 
+waypoint_function::FunctionServerNode::FunctionServerNode(const std::string &server_name, const rclcpp::NodeOptions &options): Node(server_name, options) 
 {
-    RCLCPP_INFO(this->get_logger(), "FunctionServerNode initialized with name: %s", server_name.c_str());
-
     // Subscriber to update when waypoint updated
     update_sub_ = create_subscription<example_interfaces::msg::Empty>("server_update", 1,
         bind(&FunctionServerNode::Update, this, std::placeholders::_1));
@@ -14,16 +12,18 @@ FunctionServerNode::FunctionServerNode(const std::string &server_name, const rcl
     apply_client_ = create_client<waypoint_function_msgs::srv::Command>("server_apply");
 }
 
-void FunctionServerNode::Update(const example_interfaces::msg::Empty::SharedPtr msg){return;}
-void FunctionServerNode::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
+void waypoint_function::FunctionServerNode::Update(const example_interfaces::msg::Empty::SharedPtr msg){return;}
+void waypoint_function::FunctionServerNode::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
       std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response){return;}
 
-void FunctionServerNode::SendResponse(std::string result_msg)
+void waypoint_function::FunctionServerNode::SendResponse(std::string result_msg)
 {
-  return;
+    example_interfaces::msg::String msg;
+    msg.data = result_msg;
+    response_pub_->publish(msg);
 }
 
-void FunctionServerNode::ServerApply(const std::string &server_name, const std::string &command_header, const std::string &execute_state)
+void waypoint_function::FunctionServerNode::ServerApply(const std::string &server_name, const std::string &command_header, const std::string &execute_state)
 {
   // Create Server
   server_ = create_service<waypoint_function_msgs::srv::Command>(

@@ -1,4 +1,4 @@
-#include "waypoint_function_host_server/host_server.hpp"
+#include "waypoint_function_server/host_server.hpp"
 
 waypoint_function::HostServer::HostServer(const rclcpp::NodeOptions & options) : Node("host_server", options)
 {

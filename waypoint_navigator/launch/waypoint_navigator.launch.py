@@ -12,14 +12,13 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Set the path to the waypoint CSV
-    # navigation_data_dir = os.getenv('NAVIGATION_DATA_DIR')
-    # navigation_data_name = os.getenv('NAVIGATION_DATA_NAME')
-    # waypoints_csv_path = os.path.join(
-    #     navigation_data_dir,
-    #     navigation_data_name,
-    #     f"{navigation_data_name}_wp.csv"
-    # )
-    waypoints_csv_path = '/home/racc_man/maps/test_wp.csv'
+    navigation_data_dir = os.getenv('NAVIGATION_DATA_DIR')
+    navigation_data_name = os.getenv('NAVIGATION_DATA_NAME')
+    waypoints_csv_path = os.path.join(
+        navigation_data_dir,
+        navigation_data_name,
+        f"{navigation_data_name}_wp.csv"
+    )
 
     # Set the path to the waypoint_navigator config
     waypoint_navigator_config = launch.substitutions.LaunchConfiguration(

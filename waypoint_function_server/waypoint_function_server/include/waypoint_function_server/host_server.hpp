@@ -5,7 +5,9 @@
 #include <example_interfaces/msg/string.hpp>
 #include <example_interfaces/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
-#include <waypoint_function_host_server/server_handle.hpp>
+
+#include "server_handle.hpp"
+// #include <waypoint_function_server/server_handle.hpp>
 
 using namespace std;
 
