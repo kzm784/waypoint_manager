@@ -5,7 +5,7 @@ using namespace std::chrono_literals;
 waypoint_function::KeyWaitServer::KeyWaitServer(const rclcpp::NodeOptions &options) : FunctionServerNode("wait_server_node", options) 
 {
     ServerApply(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE);
-    sub_ = create_subscription<example_interfaces::msg::Bool>("/eStop", 1, std::bind(&KeyWaitServer::callback, this, std::placeholders::_1));
+    sub_ = create_subscription<std_msgs::msg::Bool>("/eStop", 1, std::bind(&KeyWaitServer::callback, this, std::placeholders::_1));
     isWaiting_ = false;
 }
 
@@ -15,7 +15,7 @@ void waypoint_function::KeyWaitServer::FunctionCallback(const std::shared_ptr<wa
     isWaiting_ = true;
 }
 
-void waypoint_function::KeyWaitServer::callback(const example_interfaces::msg::Bool::SharedPtr msg)
+void waypoint_function::KeyWaitServer::callback(const std_msgs::msg::Bool::SharedPtr msg)
 {
     if(!(msg->data) && isWaiting_)
     {

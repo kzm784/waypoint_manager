@@ -8,7 +8,7 @@
 #include <termios.h>
 #include <chrono>
 
-#include <example_interfaces/msg/bool.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 namespace waypoint_function 
 {
@@ -20,14 +20,14 @@ namespace waypoint_function
                     std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response) override;
 
         private:
-            void callback(const example_interfaces::msg::Bool::SharedPtr msg);
+            void callback(const std_msgs::msg::Bool::SharedPtr msg);
 
             std::string SERVER_NAME    = "key_wait_server";
             std::string COMMAND_HEADER = "key_wait";
             std::string EXECUTE_STATE  = "end";
 
             bool isWaiting_;
-            rclcpp::Subscription<example_interfaces::msg::Bool>::SharedPtr sub_;
+            rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_;
     };
 }
 
