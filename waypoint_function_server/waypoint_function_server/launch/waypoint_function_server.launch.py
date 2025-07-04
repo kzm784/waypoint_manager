@@ -27,6 +27,14 @@ def generate_launch_description():
     )
     ld.add_action(wait_server_node)
 
+    key_wait_server_node = Node(
+        package="waypoint_function_wait_server",
+        executable='key_wait_server',
+        name='key_wait_server',
+        output='screen',
+    )
+    ld.add_action(key_wait_server_node)
+
     test_server_node = Node(
         package="waypoint_function_server_example",
         executable='test_server',
