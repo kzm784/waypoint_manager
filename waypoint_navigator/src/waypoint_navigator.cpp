@@ -152,6 +152,7 @@ void WaypointNavigator::UpdateCommands()
     int data_length = waypoints_data_[waypoint_id_].size();
     for (int i=8; i<data_length; i++)
     {
+        if(waypoints_data_[waypoint_id_][i].empty()) continue;
         function_commands_.push_back(waypoints_data_[waypoint_id_][i]);
     }
 }
