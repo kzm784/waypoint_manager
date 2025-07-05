@@ -8,12 +8,10 @@
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <depend>rclcpp</depend>
-  <depend>rclcpp_components</depend>
-  <depend>rclcpp_action</depend>
-  <depend>example_interfaces</depend>
-  <depend>waypoint_function_msgs</depend>
+  <buildtool_depend>ncurses</buildtool_depend>
+  
+  <depend>waypoint_function_server</depend>
+  <depend>std_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

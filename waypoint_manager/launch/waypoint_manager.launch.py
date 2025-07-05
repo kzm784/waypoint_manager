@@ -12,13 +12,15 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Set the path to the waypoint CSV
-    navigation_data_dir = os.getenv('NAVIGATION_DATA_DIR')
-    navigation_data_name = os.getenv('NAVIGATION_DATA_NAME')
-    waypoints_csv_path = os.path.join(
-        navigation_data_dir,
-        navigation_data_name,
-        f"{navigation_data_name}_wp.csv"
-    )
+    # navigation_data_dir = os.getenv('NAVIGATION_DATA_DIR')
+    # navigation_data_name = os.getenv('NAVIGATION_DATA_NAME')
+    # waypoints_csv_path = os.path.join(
+    #     navigation_data_dir,
+    #     navigation_data_name,
+    #     f"{navigation_data_name}_wp.csv"
+    # )
+
+    waypoints_csv_path = os.path.join("/home/kazuma/navigation_data/megarover_samples/megarover_samples_wp.csv")
 
     # Set the path to the waypoint_manager config
     waypoint_manager_config = launch.substitutions.LaunchConfiguration(
