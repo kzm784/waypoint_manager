@@ -4,4 +4,10 @@
          base_class_type="rviz_common::Tool">
     <description>Pause End</description>
   </class>
+
+  <class name="waypoint_rviz_plugins/WaypointMarkerTool"
+        type="waypoint_rviz_plugins::WaypointMarkerTool"
+        base_class_type="rviz_common::Tool">
+    <description>Add Waypoint</description>
+  </class>
 </library>
