@@ -8,6 +8,7 @@ find_package(pluginlib REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
 
@@ -47,6 +48,7 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
   interactive_markers
   visualization_msgs
+  std_srvs
 )
 
 pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
@@ -80,5 +82,6 @@ ament_export_dependencies(
   std_msgs
   interactive_markers
   visualization_msgs
+  std_srvs
 )
 ament_package()

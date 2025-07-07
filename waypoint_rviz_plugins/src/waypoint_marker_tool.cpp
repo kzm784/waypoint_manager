@@ -4,8 +4,15 @@
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_common/render_panel.hpp>
 #include <visualization_msgs/msg/menu_entry.hpp>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <fstream>
 
 #include "waypoint_rviz_plugins/waypoint_marker_tool.hpp"
+
+using namespace std::placeholders;
 
 namespace waypoint_rviz_plugins
 {
@@ -25,6 +32,13 @@ void WaypointMarkerTool::onInitialize()
         rclcpp::SystemDefaultsQoS(),
         rclcpp::SystemDefaultsQoS()
     );
+
+    save_service_ = nh_->create_service<std_srvs::srv::Trigger>(
+        "save_waypoints",
+        std::bind(&WaypointMarkerTool::handleSaveWaypoints, this, _1, _2)
+    );
+
+    waypoints_.clear();
 }
 
 int WaypointMarkerTool::processMouseEvent(rviz_common::ViewportMouseEvent & event)
@@ -35,7 +49,18 @@ int WaypointMarkerTool::processMouseEvent(rviz_common::ViewportMouseEvent & even
         Ogre::Vector3 intersection = projection.second;
         if (projection.first)
         {
-            waypoints_.emplace_back(intersection.x, intersection.y);
+            Waypoint wp;
+            wp.pose.header.frame_id = "map";
+            wp.pose.header.stamp = nh_->now();
+            wp.pose.pose.position.x = projection.second.x;
+            wp.pose.pose.position.y = projection.second.y;
+            wp.pose.pose.position.z = 0.0;
+            wp.pose.pose.orientation.x = 0.0;
+            wp.pose.pose.orientation.y = 0.0;
+            wp.pose.pose.orientation.z = 0.0;
+            wp.pose.pose.orientation.w = 1.0;
+            wp.function_command.clear();
+            waypoints_.push_back(std::move(wp));
             updateWaypointMarker();
             return Finished;
         }
@@ -44,21 +69,38 @@ int WaypointMarkerTool::processMouseEvent(rviz_common::ViewportMouseEvent & even
     return Render;
 }
 
-visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMarker(int id, double pose_x, double pose_y)
+void WaypointMarkerTool::updateWaypointMarker()
 {
+    server_->clear();
+    for (size_t i = 0; i < waypoints_.size(); ++i) {
+        auto int_marker = createWaypointMarker(static_cast<int>(i));
+        server_->insert(int_marker, std::bind(&WaypointMarkerTool::processFeedback, this, _1));
+    }
+
+    server_->applyChanges();
+}
+
+visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMarker(const int id)
+{
+    const auto & wp = waypoints_[id];
+
     visualization_msgs::msg::InteractiveMarker int_marker;
-    int_marker.header.frame_id = "map";
+    int_marker.header.frame_id = wp.pose.header.frame_id;;
     int_marker.name = std::to_string(id);
-    int_marker.description = "";
+    int_marker.description = waypoints_.at(id).function_command;
     int_marker.scale = 1.0;
-    int_marker.pose.position.x = pose_x;
-    int_marker.pose.position.y = pose_y;
-    int_marker.pose.position.z = 0.0;
+    int_marker.pose.position = wp.pose.pose.position;
+    int_marker.pose.orientation = wp.pose.pose.orientation;
 
     // Position control (sphere)
     visualization_msgs::msg::InteractiveMarkerControl pos_control;
     pos_control.name = "move_position";
     pos_control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_PLANE;
+    pos_control.always_visible = true;
+    pos_control.orientation.w = 0.7071;
+    pos_control.orientation.x = 0.0;
+    pos_control.orientation.y = 0.7071;
+    pos_control.orientation.z = 0.0;
     {
         visualization_msgs::msg::Marker sphere;
         sphere.type = visualization_msgs::msg::Marker::SPHERE;
@@ -71,11 +113,6 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
         sphere.color.a = 1.0;
         pos_control.markers.push_back(sphere);
     }
-    pos_control.always_visible = true;
-    pos_control.orientation.w = 0.7071;
-    pos_control.orientation.x = 0.0;
-    pos_control.orientation.y = 0.7071;
-    pos_control.orientation.z = 0.0;
     int_marker.controls.push_back(pos_control);
 
     visualization_msgs::msg::InteractiveMarkerControl rot_control_default;
@@ -123,7 +160,7 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
         text.color.g = 1.0;
         text.color.b = 1.0;
         text.color.a = 1.0;
-        std::string id_text = "ID:" + std::to_string(id);
+        std::string id_text = "ID:" + std::to_string(id) + "\n" + waypoints_.at(id).function_command;;
         text.text = id_text;
         text.pose.position.x = -0.3;
         text.pose.position.y = -0.3;
@@ -138,39 +175,128 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
     menu_control.interaction_mode  = visualization_msgs::msg::InteractiveMarkerControl::MENU;
     int_marker.controls.push_back(menu_control);
     
-    visualization_msgs::msg::MenuEntry entry;
-    entry.id        = 1;
-    entry.parent_id = 0;
-    entry.title     = "Delete Waypoint";
-    int_marker.menu_entries.push_back(entry);
+    visualization_msgs::msg::MenuEntry delete_entry;
+    delete_entry.id        = 1;
+    delete_entry.parent_id = 0;
+    delete_entry.title     = "Delete Waypoint";
+    int_marker.menu_entries.push_back(delete_entry);
+
+    visualization_msgs::msg::MenuEntry add_function_command_entry;
+    add_function_command_entry.id = 2;
+    add_function_command_entry.parent_id = 0;
+    add_function_command_entry.title = "Add Function Command";
+    int_marker.menu_entries.push_back(add_function_command_entry);
 
     return int_marker;
 }
 
+void WaypointMarkerTool::processFeedback(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> &fb)
+{
+    int id = std::stoi(fb->marker_name);
+
+    switch (fb->event_type)
+    {
+        case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
+            waypoints_[id].pose.pose.position = fb->pose.position;
+            waypoints_[id].pose.pose.orientation = fb->pose.orientation;
+            break;
+
+        case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
+            processMenuControl(fb);
+            break;
+
+        default:
+            break;
+    }    
+}
+
 void WaypointMarkerTool::processMenuControl(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> & fb)
 {
-    if (fb->event_type != visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT) {
-        return;
-    }
-    if (fb->menu_entry_id == 1) {
-        int idx = std::stoi(fb->marker_name);
-        if (0 <= idx && idx < static_cast<int>(waypoints_.size())) {
+    if (fb->event_type != visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT) { return; }
+
+    int idx = std::stoi(fb->marker_name);
+    if (idx < 0 || idx >= static_cast<int>(waypoints_.size())) { return; }
+
+    switch (fb->menu_entry_id) {
+      
+        // Delete Waypoint
+        case 1:
             waypoints_.erase(waypoints_.begin() + idx);
             updateWaypointMarker();
             RCLCPP_INFO(nh_->get_logger(), "Deleted waypoint %d", idx);
+            break;
+
+        // Add / Edit Function Command
+        case 2:
+        {
+            bool ok = false;
+            QString current = QString::fromStdString(waypoints_[idx].function_command);
+            QString text = QInputDialog::getText(
+                nullptr,
+                tr("Edit Function Command"),
+                tr("Enter command for waypoint %1:").arg(idx),
+                QLineEdit::Normal,
+                current,
+                &ok
+            );
+
+            if (ok) 
+            {
+                waypoints_[idx].function_command = text.toStdString();
+                updateWaypointMarker();
+                RCLCPP_INFO(nh_->get_logger(), "Updated command of waypoint %d to '%s'", idx, waypoints_[idx].function_command.c_str());
+            }
         }
+        break;
+
+      default:
+        break;
     }
 }
 
-void WaypointMarkerTool::updateWaypointMarker()
+void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res)
 {
-    server_->clear();
-    for (size_t i = 0; i < waypoints_.size(); ++i) {
-        auto int_marker = createWaypointMarker(static_cast<int>(i), waypoints_[i].first, waypoints_[i].second);
-        server_->insert(int_marker, std::bind(&WaypointMarkerTool::processMenuControl, this, std::placeholders::_1));
+    QString qpath = QFileDialog::getSaveFileName(
+        nullptr,
+        tr("Save Waypoints As"),
+        "",
+        tr("CSV Files (*.csv)")
+    );
+    if (qpath.isEmpty()) {
+        res->success = false;
+        res->message = "Save canceled by user";
+        return;
     }
 
-    server_->applyChanges();
+    if (!qpath.endsWith(".csv", Qt::CaseInsensitive)) {
+        qpath += ".csv";
+    }
+    
+    const std::string path = qpath.toStdString();
+
+    std::ofstream ofs(path);
+    if (!ofs) {
+        QMessageBox::warning(nullptr, tr("Error"),
+        tr("Cannot open file:\n%1").arg(qpath));
+        res->success = false;
+        res->message = "Failed to open file: " + path;
+        return;
+    }
+
+    ofs << "id,pose_x,pose_y,pose_z,rot_x,rot_y,rot_z,rot_w,command\n";
+    for (size_t i = 0; i < waypoints_.size(); ++i) {
+        const auto & p = waypoints_[i].pose.pose;
+        ofs
+        << i << ","
+        << p.position.x << "," << p.position.y << "," << p.position.z << ","
+        << p.orientation.x << "," << p.orientation.y << ","
+        << p.orientation.z << "," << p.orientation.w << ","
+        << "\"" << waypoints_[i].function_command << "\"\n";
+    }
+    ofs.close();
+
+    res->success = true;
+    res->message = "Saved " + std::to_string(waypoints_.size()) + " waypoints to " + path;
 }
 
 void WaypointMarkerTool::activate() {}

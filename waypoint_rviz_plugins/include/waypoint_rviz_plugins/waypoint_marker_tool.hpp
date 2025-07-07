@@ -7,9 +7,19 @@
 #include <interactive_markers/interactive_marker_server.hpp>
 #include <visualization_msgs/msg/interactive_marker.hpp>
 #include <visualization_msgs/msg/interactive_marker_control.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <std_srvs/srv/trigger.hpp>
+
 
 namespace waypoint_rviz_plugins
 {
+
+struct Waypoint
+{
+    geometry_msgs::msg::PoseStamped pose;
+    std::string function_command;
+};
+
 class WaypointMarkerTool : public rviz_common::Tool
 {
     Q_OBJECT
@@ -23,9 +33,12 @@ public:
     void deactivate() override;
 
     int processMouseEvent(rviz_common::ViewportMouseEvent & event) override;
-    visualization_msgs::msg::InteractiveMarker createWaypointMarker(int id, double pose_x, double pose_y);
-    void processMenuControl(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> & feedback);
     void updateWaypointMarker();
+    visualization_msgs::msg::InteractiveMarker createWaypointMarker(const int id);
+    void processFeedback(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> &fb);
+    void processMenuControl(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> & fb);
+    void handleSaveWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res);
+
 
 private Q_SLOTS:  
 
@@ -33,8 +46,9 @@ private:
     rclcpp::Node::SharedPtr nh_;
     std::shared_ptr<rviz_rendering::ViewportProjectionFinder> projection_finder_;
     std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;
 
-    std::vector<std::pair<double,double>> waypoints_;
+    std::vector<Waypoint> waypoints_;
 };
     
 } // namespace waypoint_rviz_plugins
