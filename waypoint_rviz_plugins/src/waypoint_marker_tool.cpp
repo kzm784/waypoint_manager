@@ -208,7 +208,9 @@ void WaypointMarkerTool::processFeedback(const std::shared_ptr<const visualizati
     {
         case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
             waypoints_[id].pose.pose.position = fb->pose.position;
-            waypoints_[id].pose.pose.orientation = fb->pose.orientation;
+            waypoints_[id].pose.pose.orientation.z = fb->pose.orientation.z;
+            waypoints_[id].pose.pose.orientation.w = fb->pose.orientation.w;
+
             updateWaypointMarker();
             break;
 
