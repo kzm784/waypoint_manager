@@ -9,11 +9,10 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>waypoint_creater</depend>
+  <depend>waypoint_editer</depend>
   <depend>waypoint_manager_utils</depend>
   <depend>waypoint_navigator</depend>
-  <depend>waypoint_server</depend>
-  <depend>waypoint_server_msgs</depend>
+  <depend>waypoint_function_server</depend>
   <depend>waypoint_visualizer</depend>
 
   <exec_depend>launch_ros</exec_depend>
