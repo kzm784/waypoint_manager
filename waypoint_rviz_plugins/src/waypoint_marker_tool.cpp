@@ -34,6 +34,10 @@ void WaypointMarkerTool::onInitialize()
         rclcpp::SystemDefaultsQoS()
     );
     line_pub_ = nh_->create_publisher<visualization_msgs::msg::Marker>("waypoint_line", 10);
+    line_timer_ = nh_->create_wall_timer(
+        std::chrono::milliseconds(500),
+        std::bind(&WaypointMarkerTool::publishLineMarker, this)
+    );
     save_service_ = nh_->create_service<std_srvs::srv::Trigger>(
         "save_waypoints",
         std::bind(&WaypointMarkerTool::handleSaveWaypoints, this, _1, _2)
@@ -83,29 +87,6 @@ void WaypointMarkerTool::updateWaypointMarker()
     }
 
     server_->applyChanges();
-
-    visualization_msgs::msg::Marker line;
-    line.header.frame_id = "map";
-    line.header.stamp = nh_->now();
-    line.ns = "waypoint_lines";
-    line.id = 0;
-    line.type = visualization_msgs::msg::Marker::LINE_LIST;
-    line.action = visualization_msgs::msg::Marker::ADD;
-    line.scale.x = 0.025f;
-    line.color.r = 0.0f;
-    line.color.g = 1.0f;
-    line.color.b = 0.0f;
-    line.color.a = 1.0f;
-
-    for (size_t i = 1; i < waypoints_.size(); ++i) {
-        geometry_msgs::msg::Point p0, p1;
-        p0 = waypoints_[i-1].pose.pose.position;
-        p1 = waypoints_[i].pose.pose.position;
-        line.points.push_back(p0);
-        line.points.push_back(p1);
-    }
-
-    line_pub_->publish(line);
 }
 
 visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMarker(const int id)
@@ -281,6 +262,31 @@ void WaypointMarkerTool::processMenuControl(const std::shared_ptr<const visualiz
       default:
         break;
     }
+}
+
+void WaypointMarkerTool::publishLineMarker()
+{
+    visualization_msgs::msg::Marker line;
+    line.header.frame_id = "map";
+    line.header.stamp    = nh_->now();
+    line.ns              = "waypoint_lines";
+    line.id              = 0;
+    line.type            = visualization_msgs::msg::Marker::LINE_LIST;
+    line.action          = visualization_msgs::msg::Marker::ADD;
+    line.scale.x         = 0.025f;
+    line.color.r         = 0.0f;
+    line.color.g         = 1.0f;
+    line.color.b         = 0.0f;
+    line.color.a         = 1.0f;
+
+    for (size_t i = 1; i < waypoints_.size(); ++i) {
+        geometry_msgs::msg::Point p0 = waypoints_[i-1].pose.pose.position;
+        geometry_msgs::msg::Point p1 = waypoints_[i].pose.pose.position;
+        line.points.push_back(p0);
+        line.points.push_back(p1);
+    }
+
+    line_pub_->publish(line);
 }
 
 void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res)

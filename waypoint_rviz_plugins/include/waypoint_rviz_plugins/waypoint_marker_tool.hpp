@@ -39,6 +39,7 @@ public:
     void processMenuControl(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> & fb);
     void handleSaveWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res);
     void handleLoadWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res);
+    void publishLineMarker();
 
 
 private Q_SLOTS:  
@@ -48,6 +49,7 @@ private:
     std::shared_ptr<rviz_rendering::ViewportProjectionFinder> projection_finder_;
     std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr line_pub_;
+    rclcpp::TimerBase::SharedPtr line_timer_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr load_service_;
 
