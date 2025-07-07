@@ -4,6 +4,7 @@ project(waypoint_rviz_plugins)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rviz_common REQUIRED)
+find_package(rviz_default_plugins REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
@@ -47,6 +48,7 @@ target_link_libraries(${PROJECT_NAME}
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   rviz_common
+  rviz_default_plugins
   pluginlib
   std_msgs
   interactive_markers
@@ -82,6 +84,7 @@ ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_dependencies(
   rclcpp
   rviz_common
+  rviz_default_plugins
   pluginlib
   std_msgs
   interactive_markers

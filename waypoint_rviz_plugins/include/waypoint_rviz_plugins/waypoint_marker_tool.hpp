@@ -3,13 +3,15 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/tool.hpp>
+#include <nav2_rviz_plugins/goal_common.hpp>
+#include <rviz_default_plugins/tools/pose/pose_tool.hpp>
+#include <rviz_default_plugins/visibility_control.hpp>
 #include <rviz_rendering/viewport_projection_finder.hpp>
 #include <interactive_markers/interactive_marker_server.hpp>
 #include <visualization_msgs/msg/interactive_marker.hpp>
 #include <visualization_msgs/msg/interactive_marker_control.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <std_srvs/srv/trigger.hpp>
-
 
 namespace waypoint_rviz_plugins
 {
@@ -20,7 +22,7 @@ struct Waypoint
     std::string function_command;
 };
 
-class WaypointMarkerTool : public rviz_common::Tool
+class RVIZ_DEFAULT_PLUGINS_PUBLIC WaypointMarkerTool : public rviz_default_plugins::tools::PoseTool
 {
     Q_OBJECT
 
@@ -32,7 +34,7 @@ public:
     void activate() override;
     void deactivate() override;
 
-    int processMouseEvent(rviz_common::ViewportMouseEvent & event) override;
+    void onPoseSet(double x, double y, double theta) override;
     void updateWaypointMarker();
     visualization_msgs::msg::InteractiveMarker createWaypointMarker(const int id);
     void processFeedback(const std::shared_ptr<const visualization_msgs::msg::InteractiveMarkerFeedback> &fb);
