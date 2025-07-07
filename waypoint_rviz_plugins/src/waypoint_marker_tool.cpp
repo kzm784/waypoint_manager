@@ -1,9 +1,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/tool.hpp>
+#include <nav2_rviz_plugins/goal_common.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_common/render_panel.hpp>
+#include <rviz_common/tool_manager.hpp>
 #include <visualization_msgs/msg/menu_entry.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -18,11 +21,13 @@ using namespace std::placeholders;
 namespace waypoint_rviz_plugins
 {
 
-WaypointMarkerTool::WaypointMarkerTool() : rviz_common::Tool() {}
+WaypointMarkerTool::WaypointMarkerTool() : rviz_default_plugins::tools::PoseTool() {}
 WaypointMarkerTool::~WaypointMarkerTool() {}
 
 void WaypointMarkerTool::onInitialize()
 {
+    PoseTool::onInitialize();
+
     setName("Add Waypoint");
 
     nh_ = context_->getRosNodeAbstraction().lock()->get_raw_node();
@@ -50,32 +55,28 @@ void WaypointMarkerTool::onInitialize()
     waypoints_.clear();
 }
 
-int WaypointMarkerTool::processMouseEvent(rviz_common::ViewportMouseEvent & event)
+void WaypointMarkerTool::onPoseSet(double x, double y, double theta)
 {
-    if (event.leftDown())
-    {
-        auto projection = projection_finder_->getViewportPointProjectionOnXYPlane(event.panel->getRenderWindow(), event.x, event.y);
-        Ogre::Vector3 intersection = projection.second;
-        if (projection.first)
-        {
-            Waypoint wp;
-            wp.pose.header.frame_id = "map";
-            wp.pose.header.stamp = nh_->now();
-            wp.pose.pose.position.x = projection.second.x;
-            wp.pose.pose.position.y = projection.second.y;
-            wp.pose.pose.position.z = 0.0;
-            wp.pose.pose.orientation.x = 0.0;
-            wp.pose.pose.orientation.y = 0.0;
-            wp.pose.pose.orientation.z = 0.0;
-            wp.pose.pose.orientation.w = 1.0;
-            wp.function_command.clear();
-            waypoints_.push_back(std::move(wp));
-            updateWaypointMarker();
-            return Finished;
-        }
-        return Render;
-    }
-    return Render;
+    Waypoint wp;
+    wp.pose.header.frame_id = "map";
+    wp.pose.header.stamp = nh_->now();
+    wp.pose.pose.position.x = x;
+    wp.pose.pose.position.y = y;
+    wp.pose.pose.position.z = 0.0;
+
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, theta);
+    wp.pose.pose.orientation.x = q.x();
+    wp.pose.pose.orientation.y = q.y();
+    wp.pose.pose.orientation.z = q.z();
+    wp.pose.pose.orientation.w = q.w();
+
+    wp.function_command.clear();
+
+    waypoints_.push_back(std::move(wp));
+    updateWaypointMarker();
+    
+    deactivate();
 }
 
 void WaypointMarkerTool::updateWaypointMarker()
@@ -244,7 +245,7 @@ void WaypointMarkerTool::processMenuControl(const std::shared_ptr<const visualiz
             QString text = QInputDialog::getText(
                 nullptr,
                 tr("Edit Function Command"),
-                tr("Enter command for waypoint %1:").arg(idx),
+                tr("Enter command for waypoint ID: %1").arg(idx),
                 QLineEdit::Normal,
                 current,
                 &ok
@@ -398,7 +399,10 @@ void WaypointMarkerTool::handleLoadWaypoints(const std::shared_ptr<std_srvs::srv
 }
 
 void WaypointMarkerTool::activate() {}
-void WaypointMarkerTool::deactivate() {}
+void WaypointMarkerTool::deactivate()
+{
+    PoseTool::deactivate();
+}
 
 } // namespace waypoint_rviz_plugins
 
