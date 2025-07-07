@@ -9,12 +9,14 @@ find_package(std_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(nav2_msgs REQUIRED)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
 
 set(waypoint_rviz_plugins_headers
   include/waypoint_rviz_plugins/pause_end_tool.hpp
   include/waypoint_rviz_plugins/waypoint_marker_tool.hpp
+  include/waypoint_rviz_plugins/waypoint_editer_panel.hpp
 )
 qt5_wrap_cpp(waypoint_rviz_plugins_moc
   ${waypoint_rviz_plugins_headers}
@@ -28,6 +30,7 @@ set(CMAKE_AUTORCC ON)
 add_library(${PROJECT_NAME} SHARED
   src/pause_end_tool.cpp
   src/waypoint_marker_tool.cpp
+  src/waypoint_editer_panel.cpp
   ${waypoint_rviz_plugins_moc}
 )
 
@@ -49,6 +52,7 @@ ament_target_dependencies(${PROJECT_NAME}
   interactive_markers
   visualization_msgs
   std_srvs
+  nav2_msgs
 )
 
 pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
@@ -83,5 +87,6 @@ ament_export_dependencies(
   interactive_markers
   visualization_msgs
   std_srvs
+  nav2_msgs
 )
 ament_package()

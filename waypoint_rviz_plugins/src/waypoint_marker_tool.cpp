@@ -113,9 +113,9 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
     {
         visualization_msgs::msg::Marker sphere;
         sphere.type = visualization_msgs::msg::Marker::SPHERE;
-        sphere.scale.x = 0.2;
-        sphere.scale.y = 0.2;
-        sphere.scale.z = 0.2;
+        sphere.scale.x = 0.4;
+        sphere.scale.y = 0.4;
+        sphere.scale.z = 0.4;
         sphere.color.r = 0.0;
         sphere.color.g = 1.0;
         sphere.color.b = 0.0;
@@ -144,9 +144,9 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
     {
         visualization_msgs::msg::Marker arrow;
         arrow.type = visualization_msgs::msg::Marker::ARROW;
-        arrow.scale.x = 0.3;
-        arrow.scale.y = 0.075;
-        arrow.scale.z = 0.075;
+        arrow.scale.x = 0.4;
+        arrow.scale.y = 0.1;
+        arrow.scale.z = 0.1;
         arrow.color.r = 1.0;
         arrow.color.g = 0.0;
         arrow.color.b = 0.0;
@@ -165,9 +165,9 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
         visualization_msgs::msg::Marker text;
         text.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
         text.scale.z = 0.2;
-        text.color.r = 1.0;
-        text.color.g = 1.0;
-        text.color.b = 1.0;
+        text.color.r = 0.0;
+        text.color.g = 0.0;
+        text.color.b = 0.0;
         text.color.a = 1.0;
         std::string id_text = "ID:" + std::to_string(id) + "\n" + waypoints_.at(id).function_command;;
         text.text = id_text;
