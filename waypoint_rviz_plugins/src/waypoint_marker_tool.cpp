@@ -66,8 +66,8 @@ void WaypointMarkerTool::onPoseSet(double x, double y, double theta)
 
     tf2::Quaternion q;
     q.setRPY(0.0, 0.0, theta);
-    wp.pose.pose.orientation.x = q.x();
-    wp.pose.pose.orientation.y = q.y();
+    wp.pose.pose.orientation.x = 0,0;
+    wp.pose.pose.orientation.y = 0.0;
     wp.pose.pose.orientation.z = q.z();
     wp.pose.pose.orientation.w = q.w();
 
@@ -269,16 +269,16 @@ void WaypointMarkerTool::publishLineMarker()
 {
     visualization_msgs::msg::Marker line;
     line.header.frame_id = "map";
-    line.header.stamp    = nh_->now();
-    line.ns              = "waypoint_lines";
-    line.id              = 0;
-    line.type            = visualization_msgs::msg::Marker::LINE_LIST;
-    line.action          = visualization_msgs::msg::Marker::ADD;
-    line.scale.x         = 0.025f;
-    line.color.r         = 0.0f;
-    line.color.g         = 1.0f;
-    line.color.b         = 0.0f;
-    line.color.a         = 1.0f;
+    line.header.stamp = nh_->now();
+    line.ns = "waypoint_lines";
+    line.id = 0;
+    line.type = visualization_msgs::msg::Marker::LINE_LIST;
+    line.action  = visualization_msgs::msg::Marker::ADD;
+    line.scale.x = 0.025f;
+    line.color.r = 0.0f;
+    line.color.g  = 1.0f;
+    line.color.b  = 0.0f;
+    line.color.a  = 1.0f;
 
     for (size_t i = 1; i < waypoints_.size(); ++i) {
         geometry_msgs::msg::Point p0 = waypoints_[i-1].pose.pose.position;
@@ -323,11 +323,17 @@ void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv
     for (size_t i = 0; i < waypoints_.size(); ++i) {
         const auto & p = waypoints_[i].pose.pose;
         ofs
-        << i << ","
+        << i << "," 
         << p.position.x << "," << p.position.y << "," << p.position.z << ","
-        << p.orientation.x << "," << p.orientation.y << ","
-        << p.orientation.z << "," << p.orientation.w << ","
-        << "\"" << waypoints_[i].function_command << "\"\n";
+        << p.orientation.x << "," << p.orientation.y << "," << p.orientation.z << "," << p.orientation.w;
+
+        std::istringstream ss(waypoints_[i].function_command);
+        std::string token;
+        while (std::getline(ss, token, ',')) {
+        ofs << "," << token;
+        }
+
+        ofs << "\n";
     }
     ofs.close();
 

@@ -12,6 +12,7 @@
 #include <visualization_msgs/msg/interactive_marker_control.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <QObject>
 
 namespace waypoint_rviz_plugins
 {
@@ -22,7 +23,7 @@ struct Waypoint
     std::string function_command;
 };
 
-class RVIZ_DEFAULT_PLUGINS_PUBLIC WaypointMarkerTool : public rviz_default_plugins::tools::PoseTool
+class WaypointMarkerTool : public rviz_default_plugins::tools::PoseTool
 {
     Q_OBJECT
 
