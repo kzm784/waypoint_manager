@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QTextStream>
 #include <fstream>
 
 #include "waypoint_rviz_plugins/waypoint_marker_tool.hpp"
@@ -36,6 +37,11 @@ void WaypointMarkerTool::onInitialize()
     save_service_ = nh_->create_service<std_srvs::srv::Trigger>(
         "save_waypoints",
         std::bind(&WaypointMarkerTool::handleSaveWaypoints, this, _1, _2)
+    );
+
+    load_service_ = nh_->create_service<std_srvs::srv::Trigger>(
+        "load_waypoints",
+        std::bind(&WaypointMarkerTool::handleLoadWaypoints, this, _1, _2)
     );
 
     waypoints_.clear();
@@ -271,7 +277,7 @@ void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv
     if (!qpath.endsWith(".csv", Qt::CaseInsensitive)) {
         qpath += ".csv";
     }
-    
+
     const std::string path = qpath.toStdString();
 
     std::ofstream ofs(path);
@@ -297,6 +303,69 @@ void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv
 
     res->success = true;
     res->message = "Saved " + std::to_string(waypoints_.size()) + " waypoints to " + path;
+}
+
+void WaypointMarkerTool::handleLoadWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res)
+{
+    QString qpath = QFileDialog::getOpenFileName(
+        nullptr,
+        tr("Open Waypoints"),
+        "",
+        tr("CSV Files (*.csv)"));
+    if (qpath.isEmpty()) {
+        res->success = false;
+        res->message = "Load canceled by user";
+    return;
+    }
+
+    QFile file(qpath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    QMessageBox::warning(nullptr, tr("Error"),
+        tr("Cannot open file:\n%1").arg(qpath));
+    res->success = false;
+    res->message = "Failed to open file: " + qpath.toStdString();
+    return;
+    }
+
+    QTextStream in(&file);
+    QString header = in.readLine();
+
+    waypoints_.clear();
+
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty()) continue;
+        QStringList cols = line.split(',');
+        if (cols.size() < 9) continue;
+
+        Waypoint wp;
+        wp.pose.header.frame_id = "map";
+        wp.pose.header.stamp = nh_->now();
+        wp.pose.pose.position.x = cols[1].toDouble();
+        wp.pose.pose.position.y = cols[2].toDouble();
+        wp.pose.pose.position.z = cols[3].toDouble();
+        wp.pose.pose.orientation.x = cols[4].toDouble();
+        wp.pose.pose.orientation.y = cols[5].toDouble();
+        wp.pose.pose.orientation.z = cols[6].toDouble();
+        wp.pose.pose.orientation.w = cols[7].toDouble();
+        QString cmd;
+        if (cols.size() >= 9) {
+            QStringList cmdParts = cols.mid(8);
+            cmd = cmdParts.join(",");
+            if (cmd.startsWith('"') && cmd.endsWith('"') && cmd.size() >= 2) {
+                cmd = cmd.mid(1, cmd.size() - 2);
+            }
+        }
+        wp.function_command = cmd.toStdString();
+
+        waypoints_.push_back(std::move(wp));
+    }
+    file.close();
+
+    updateWaypointMarker();
+
+    res->success = true;
+    res->message = "Loaded " + std::to_string(waypoints_.size()) + " waypoints from " + qpath.toStdString();
 }
 
 void WaypointMarkerTool::activate() {}
