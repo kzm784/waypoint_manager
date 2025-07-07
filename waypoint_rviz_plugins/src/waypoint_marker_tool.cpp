@@ -33,12 +33,11 @@ void WaypointMarkerTool::onInitialize()
         rclcpp::SystemDefaultsQoS(),
         rclcpp::SystemDefaultsQoS()
     );
-
+    line_pub_ = nh_->create_publisher<visualization_msgs::msg::Marker>("waypoint_line", 10);
     save_service_ = nh_->create_service<std_srvs::srv::Trigger>(
         "save_waypoints",
         std::bind(&WaypointMarkerTool::handleSaveWaypoints, this, _1, _2)
     );
-
     load_service_ = nh_->create_service<std_srvs::srv::Trigger>(
         "load_waypoints",
         std::bind(&WaypointMarkerTool::handleLoadWaypoints, this, _1, _2)
@@ -84,6 +83,29 @@ void WaypointMarkerTool::updateWaypointMarker()
     }
 
     server_->applyChanges();
+
+    visualization_msgs::msg::Marker line;
+    line.header.frame_id = "map";
+    line.header.stamp    = nh_->now();
+    line.ns              = "waypoint_lines";
+    line.id              = 0;
+    line.type            = visualization_msgs::msg::Marker::LINE_LIST;
+    line.action          = visualization_msgs::msg::Marker::ADD;
+    line.scale.x         = 0.025f;
+    line.color.r         = 0.0f;
+    line.color.g         = 1.0f;
+    line.color.b         = 0.0f;
+    line.color.a         = 1.0f;
+
+    for (size_t i = 1; i < waypoints_.size(); ++i) {
+        geometry_msgs::msg::Point p0, p1;
+        p0 = waypoints_[i-1].pose.pose.position;
+        p1 = waypoints_[i  ].pose.pose.position;
+        line.points.push_back(p0);
+        line.points.push_back(p1);
+    }
+
+    line_pub_->publish(line);
 }
 
 visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMarker(const int id)
@@ -205,6 +227,7 @@ void WaypointMarkerTool::processFeedback(const std::shared_ptr<const visualizati
         case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
             waypoints_[id].pose.pose.position = fb->pose.position;
             waypoints_[id].pose.pose.orientation = fb->pose.orientation;
+            updateWaypointMarker();
             break;
 
         case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:

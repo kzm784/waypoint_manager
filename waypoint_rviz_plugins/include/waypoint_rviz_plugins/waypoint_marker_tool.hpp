@@ -47,6 +47,7 @@ private:
     rclcpp::Node::SharedPtr nh_;
     std::shared_ptr<rviz_rendering::ViewportProjectionFinder> projection_finder_;
     std::shared_ptr<interactive_markers::InteractiveMarkerServer> server_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr line_pub_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr save_service_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr load_service_;
 
