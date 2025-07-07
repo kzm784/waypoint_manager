@@ -86,21 +86,21 @@ void WaypointMarkerTool::updateWaypointMarker()
 
     visualization_msgs::msg::Marker line;
     line.header.frame_id = "map";
-    line.header.stamp    = nh_->now();
-    line.ns              = "waypoint_lines";
-    line.id              = 0;
-    line.type            = visualization_msgs::msg::Marker::LINE_LIST;
-    line.action          = visualization_msgs::msg::Marker::ADD;
-    line.scale.x         = 0.025f;
-    line.color.r         = 0.0f;
-    line.color.g         = 1.0f;
-    line.color.b         = 0.0f;
-    line.color.a         = 1.0f;
+    line.header.stamp = nh_->now();
+    line.ns = "waypoint_lines";
+    line.id = 0;
+    line.type = visualization_msgs::msg::Marker::LINE_LIST;
+    line.action = visualization_msgs::msg::Marker::ADD;
+    line.scale.x = 0.025f;
+    line.color.r = 0.0f;
+    line.color.g = 1.0f;
+    line.color.b = 0.0f;
+    line.color.a = 1.0f;
 
     for (size_t i = 1; i < waypoints_.size(); ++i) {
         geometry_msgs::msg::Point p0, p1;
         p0 = waypoints_[i-1].pose.pose.position;
-        p1 = waypoints_[i  ].pose.pose.position;
+        p1 = waypoints_[i].pose.pose.position;
         line.points.push_back(p0);
         line.points.push_back(p1);
     }
