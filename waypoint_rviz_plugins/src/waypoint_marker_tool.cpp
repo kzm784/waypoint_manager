@@ -363,22 +363,43 @@ void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv
         return;
     }
 
-    ofs << "id,pose_x,pose_y,pose_z,rot_x,rot_y,rot_z,rot_w,command\n";
-    for (size_t i = 0; i < waypoints_.size(); ++i) {
-        const auto & p = waypoints_[i].pose.pose;
-        ofs
-        << i << "," 
-        << p.position.x << "," << p.position.y << "," << p.position.z << ","
-        << p.orientation.x << "," << p.orientation.y << "," << p.orientation.z << "," << p.orientation.w;
+    std::vector<std::vector<std::string>> all_cmds;
+    all_cmds.reserve(waypoints_.size());
 
-        std::istringstream ss(waypoints_[i].function_command);
-        std::string token;
-        while (std::getline(ss, token, ',')) {
-        ofs << "," << token;
-        }
-
-        ofs << "\n";
+    size_t max_cmds = 0;
+    for (const auto & wp : waypoints_) {
+    std::vector<std::string> parts;
+    std::istringstream ss(wp.function_command);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+        parts.push_back(token);
     }
+    max_cmds = std::max(max_cmds, parts.size());
+    all_cmds.push_back(std::move(parts));
+    }
+
+    ofs << "id,pose_x,pose_y,pose_z,rot_x,rot_y,rot_z,rot_w,command";
+    ofs << "\n";
+
+    for (size_t i = 0; i < waypoints_.size(); ++i) {
+    const auto & p = waypoints_[i].pose.pose;
+    ofs
+        << i << ","
+        << p.position.x << "," << p.position.y << "," << p.position.z << ","
+        << p.orientation.x << "," << p.orientation.y << ","
+        << p.orientation.z << "," << p.orientation.w;
+
+    const auto & parts = all_cmds[i];
+    for (size_t j = 0; j < max_cmds; ++j) {
+        if (j < parts.size()) {
+        ofs << "," << parts[j];
+        } else {
+        ofs << ",";
+        }
+    }
+    ofs << "\n";
+    }
+    
     ofs.close();
 
     res->success = true;
@@ -415,29 +436,34 @@ void WaypointMarkerTool::handleLoadWaypoints(const std::shared_ptr<std_srvs::srv
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         if (line.isEmpty()) continue;
+
         QStringList cols = line.split(',');
         if (cols.size() < 9) continue;
 
         Waypoint wp;
         wp.pose.header.frame_id = "map";
         wp.pose.header.stamp = nh_->now();
-        wp.pose.pose.position.x = cols[1].toDouble();
-        wp.pose.pose.position.y = cols[2].toDouble();
-        wp.pose.pose.position.z = cols[3].toDouble();
-        wp.pose.pose.orientation.x = cols[4].toDouble();
-        wp.pose.pose.orientation.y = cols[5].toDouble();
-        wp.pose.pose.orientation.z = cols[6].toDouble();
-        wp.pose.pose.orientation.w = cols[7].toDouble();
-        QString cmd;
-        if (cols.size() >= 9) {
-            QStringList cmdParts = cols.mid(8);
-            cmd = cmdParts.join(",");
-            if (cmd.startsWith('"') && cmd.endsWith('"') && cmd.size() >= 2) {
-                cmd = cmd.mid(1, cmd.size() - 2);
+        bool ok = false;
+        wp.pose.pose.position.x    = cols[1].toDouble(&ok);  if (!ok) continue;
+        wp.pose.pose.position.y    = cols[2].toDouble(&ok);  if (!ok) continue;
+        wp.pose.pose.position.z    = cols[3].toDouble(&ok);  if (!ok) continue;
+        wp.pose.pose.orientation.x = cols[4].toDouble(&ok);  if (!ok) continue;
+        wp.pose.pose.orientation.y = cols[5].toDouble(&ok);  if (!ok) continue;
+        wp.pose.pose.orientation.z = cols[6].toDouble(&ok);  if (!ok) continue;
+        wp.pose.pose.orientation.w = cols[7].toDouble(&ok);  if (!ok) continue;
+
+        QStringList cmdParts = cols.mid(8);
+        for (int i = cmdParts.size() - 1; i >= 0; --i) {
+            if (cmdParts[i].trimmed().isEmpty()) {
+                cmdParts.removeAt(i);
             }
         }
-        wp.function_command = cmd.toStdString();
 
+        QString cmd = cmdParts.join(',');
+        if (cmd.startsWith('"') && cmd.endsWith('"') && cmd.size() >= 2) {
+            cmd = cmd.mid(1, cmd.size() - 2);
+        }
+        wp.function_command = cmd.toStdString();
         waypoints_.push_back(std::move(wp));
     }
     file.close();
