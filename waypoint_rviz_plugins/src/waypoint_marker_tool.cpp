@@ -66,7 +66,7 @@ void WaypointMarkerTool::onPoseSet(double x, double y, double theta)
 
     tf2::Quaternion q;
     q.setRPY(0.0, 0.0, theta);
-    wp.pose.pose.orientation.x = 0,0;
+    wp.pose.pose.orientation.x = 0.0;
     wp.pose.pose.orientation.y = 0.0;
     wp.pose.pose.orientation.z = q.z();
     wp.pose.pose.orientation.w = q.w();
@@ -186,15 +186,21 @@ visualization_msgs::msg::InteractiveMarker WaypointMarkerTool::createWaypointMar
     int_marker.controls.push_back(menu_control);
     
     visualization_msgs::msg::MenuEntry delete_entry;
-    delete_entry.id        = 1;
+    delete_entry.id = 1;
     delete_entry.parent_id = 0;
-    delete_entry.title     = "Delete Waypoint";
+    delete_entry.title = "Delete Waypoint";
     int_marker.menu_entries.push_back(delete_entry);
 
+    visualization_msgs::msg::MenuEntry change_id_entry;
+    change_id_entry.id = 2;
+    change_id_entry.parent_id = 0;
+    change_id_entry.title = "Change Waypoint ID";
+    int_marker.menu_entries.push_back(change_id_entry);
+    
     visualization_msgs::msg::MenuEntry add_function_command_entry;
-    add_function_command_entry.id = 2;
+    add_function_command_entry.id = 3;
     add_function_command_entry.parent_id = 0;
-    add_function_command_entry.title = "Add Function Command";
+    add_function_command_entry.title = "Edit Function Command";
     int_marker.menu_entries.push_back(add_function_command_entry);
 
     return int_marker;
@@ -239,8 +245,45 @@ void WaypointMarkerTool::processMenuControl(const std::shared_ptr<const visualiz
             RCLCPP_INFO(nh_->get_logger(), "Deleted waypoint %d", idx);
             break;
 
-        // Add / Edit Function Command
+        // Change Waypoint ID
         case 2:
+        {
+         bool ok = false;
+            QString current = QString::fromStdString(std::to_string(idx));
+            QString text = QInputDialog::getText(
+                nullptr,
+                tr("Change Waypoint ID"),
+                tr("Enter New Waypoint ID: %1").arg(idx),
+                QLineEdit::Normal,
+                current,
+                &ok
+            );
+
+            if (ok) {
+                int insert_id = text.toInt();
+                if (0 <= insert_id && insert_id < waypoints_.size()) {
+                    auto tmp_wp = waypoints_[idx];
+                    waypoints_.erase(waypoints_.begin() + idx);
+                    waypoints_.insert(waypoints_.begin() + insert_id, tmp_wp);
+                    updateWaypointMarker();
+                    RCLCPP_INFO(nh_->get_logger(), "Changed waypoint id %d to %d", idx, insert_id);
+                } else {
+                    QMessageBox::warning(
+                        nullptr,
+                        tr("Invalid Waypoint ID"),
+                        tr("Waypoint ID %1 is out of range.\n"
+                        "Please enter a value between %2 and %3.")
+                        .arg(insert_id)
+                        .arg(0)
+                        .arg(static_cast<int>(waypoints_.size() - 1))
+                    );
+                }
+            }
+        }
+            break;
+
+        // Add / Edit Function Command
+        case 3:
         {
             bool ok = false;
             QString current = QString::fromStdString(waypoints_[idx].function_command);
@@ -253,17 +296,16 @@ void WaypointMarkerTool::processMenuControl(const std::shared_ptr<const visualiz
                 &ok
             );
 
-            if (ok) 
-            {
+            if (ok) {
                 waypoints_[idx].function_command = text.toStdString();
                 updateWaypointMarker();
                 RCLCPP_INFO(nh_->get_logger(), "Updated command of waypoint %d to '%s'", idx, waypoints_[idx].function_command.c_str());
             }
         }
-        break;
+            break;
 
       default:
-        break;
+            break;
     }
 }
 
