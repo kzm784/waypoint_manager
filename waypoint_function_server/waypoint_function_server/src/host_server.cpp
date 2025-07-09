@@ -9,10 +9,6 @@ waypoint_function::HostServer::HostServer(const rclcpp::NodeOptions & options) :
         "server_apply",
         bind(&HostServer::ServerApplyAcception, this, placeholders::_1, placeholders::_2)
     );
-
-    // Server to Accept delete Apply and delete server connection 
-    delete_apply_sub_ = create_subscription<std_msgs::msg::String>("delete_apply", 1,
-        bind(&HostServer::DeleteApplyAcception, this, placeholders::_1));
     
     // Publisher to Update Function Servers
     update_executor_ = create_publisher<std_msgs::msg::Empty>("server_update", 10);
@@ -59,21 +55,7 @@ void waypoint_function::HostServer::ServerApplyAcception(const shared_ptr<waypoi
     response->message = "Succes : Server Apply Accepted.";
 }
 
-void waypoint_function::HostServer::DeleteApplyAcception(const std_msgs::msg::String::SharedPtr msg)
-{
-     RCLCPP_INFO(this->get_logger(), "delete acccept");
-    for (int i=0; i<server_handles_.size(); i++)
-    {
-        if(msg->data == server_handles_[i].server_name)
-        {
-            server_handles_.erase(server_handles_.begin() + i);
-            return;
-        }
-    }
-}
-
-
-void waypoint_function::HostServer::Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request, shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::HostServer::Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request, shared_ptr<waypoint_function_msgs::srv::Command::Response>)
 {
     execute_state_ = request->execute_state;
     function_commands_ = request->data;

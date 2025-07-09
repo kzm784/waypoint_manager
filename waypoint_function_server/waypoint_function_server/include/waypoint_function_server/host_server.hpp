@@ -21,9 +21,8 @@ namespace waypoint_function
         private:
             void ServerApplyAcception(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
                             shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
-            void DeleteApplyAcception(const std_msgs::msg::String::SharedPtr msg);
             void Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-                            shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
+                            shared_ptr<waypoint_function_msgs::srv::Command::Response>);
             void ServerCall();
             void ReceiveSyncResponse(rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedFuture future);
             void ReceiveAsyncResponse(const std_msgs::msg::String::SharedPtr msg);
@@ -33,7 +32,6 @@ namespace waypoint_function
             vector<string> Command_Split(string &command_line);
 
             rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr accept_apply_server_;
-            rclcpp::Subscription<std_msgs::msg::String>::SharedPtr delete_apply_sub_;
             rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr function_server_;
             rclcpp::Subscription<std_msgs::msg::String>::SharedPtr function_async_response_;
             rclcpp::Publisher<std_msgs::msg::String>::SharedPtr function_result_pub_;
