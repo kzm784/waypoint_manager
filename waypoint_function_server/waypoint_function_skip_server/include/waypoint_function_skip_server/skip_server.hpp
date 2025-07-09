@@ -16,7 +16,7 @@ namespace waypoint_function
     {
         public:
             explicit SkipServer(const rclcpp::NodeOptions & options);
-            void Update(const example_interfaces::msg::Empty::SharedPtr msg) override;
+            void Update(const std_msgs::msg::Empty::SharedPtr) override;
             void FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
                     std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response) override;
 

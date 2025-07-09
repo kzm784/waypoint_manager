@@ -10,8 +10,12 @@ waypoint_function::HostServer::HostServer(const rclcpp::NodeOptions & options) :
         bind(&HostServer::ServerApplyAcception, this, placeholders::_1, placeholders::_2)
     );
 
+    // Server to Accept delete Apply and delete server connection 
+    delete_apply_sub_ = create_subscription<std_msgs::msg::String>("delete_apply", 1,
+        bind(&HostServer::DeleteApplyAcception, this, placeholders::_1));
+    
     // Publisher to Update Function Servers
-    update_executor_ = create_publisher<example_interfaces::msg::Empty>("server_update", 10);
+    update_executor_ = create_publisher<std_msgs::msg::Empty>("server_update", 10);
 
     // Server to Accept Function Commands from Waypoint Navigator
     function_server_ = create_service<waypoint_function_msgs::srv::Command>(
@@ -19,11 +23,11 @@ waypoint_function::HostServer::HostServer(const rclcpp::NodeOptions & options) :
         bind(&HostServer::Callback, this, placeholders::_1, placeholders::_2)
     );
     // Subscriber to Recieve Async Response from Function Server 
-    function_async_response_ = create_subscription<example_interfaces::msg::String>("async_response", 1,
+    function_async_response_ = create_subscription<std_msgs::msg::String>("async_response", 1,
         bind(&HostServer::ReceiveAsyncResponse, this, placeholders::_1));
     
     // Publisher to Send Functions Result to Waypoint Navigator
-    function_result_pub_ = create_publisher<example_interfaces::msg::String>("function_results", 10);
+    function_result_pub_ = create_publisher<std_msgs::msg::String>("function_results", 10);
     function_results_client_ = create_client<waypoint_function_msgs::srv::Command>("function_results");
 }
 
@@ -53,6 +57,19 @@ void waypoint_function::HostServer::ServerApplyAcception(const shared_ptr<waypoi
     server_handles_.push_back(handle_tmp);
 
     response->message = "Succes : Server Apply Accepted.";
+}
+
+void waypoint_function::HostServer::DeleteApplyAcception(const std_msgs::msg::String::SharedPtr msg)
+{
+     RCLCPP_INFO(this->get_logger(), "delete acccept");
+    for (int i=0; i<server_handles_.size(); i++)
+    {
+        if(msg->data == server_handles_[i].server_name)
+        {
+            server_handles_.erase(server_handles_.begin() + i);
+            return;
+        }
+    }
 }
 
 
@@ -92,6 +109,13 @@ void waypoint_function::HostServer::ServerCall()
             auto request = std::make_shared<waypoint_function_msgs::srv::Command::Request>();
             request->data = command_data;
             // Send Request
+            
+            while (!handle.client->wait_for_service(1s)) {
+                if (!rclcpp::ok()) {
+                    return;
+                }
+                RCLCPP_INFO(this->get_logger(), "Service is not available. waiting...");
+            }
             auto future_response = handle.client->async_send_request(
                 request, 
                 bind(&HostServer::ReceiveSyncResponse,this,placeholders::_1));
@@ -109,7 +133,7 @@ void waypoint_function::HostServer::ReceiveSyncResponse(rclcpp::Client<waypoint_
     RunNextCommand();
 }
 
-void waypoint_function::HostServer::ReceiveAsyncResponse(const example_interfaces::msg::String::SharedPtr msg)
+void waypoint_function::HostServer::ReceiveAsyncResponse(const std_msgs::msg::String::SharedPtr msg)
 {
     results_msg_.push_back(msg->data);
     RunNextCommand();
@@ -143,7 +167,7 @@ void waypoint_function::HostServer::SendFunctionResults()
 
 void waypoint_function::HostServer::ServerUpdate()
 {
-    example_interfaces::msg::Empty msg;
+    std_msgs::msg::Empty msg;
     update_executor_->publish(msg);
 }
 

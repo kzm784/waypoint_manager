@@ -16,7 +16,7 @@ waypoint_function::SkipServer::SkipServer(const rclcpp::NodeOptions &options) : 
     nav_handle_ = create_publisher<std_msgs::msg::String>("nav2_cancel",10);
 }
 
-void waypoint_function::SkipServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
+void waypoint_function::SkipServer::Update(const std_msgs::msg::Empty::SharedPtr)
 {
     skipAvairable_ = false;
 }
