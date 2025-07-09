@@ -6,14 +6,14 @@ waypoint_function::SkipServer::SkipServer(const rclcpp::NodeOptions &options) : 
 {
     ServerApply(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE);
 
-    tarPose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>("next_waypoint_msg", 1,
+    tarPose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>("next_waypoint_msg", 10,
         std::bind(&SkipServer::targetPoseCallback, this, std::placeholders::_1));
-    curPose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>("pcl_pose", 1,
+    curPose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("amcl_pose", 10,
         std::bind(&SkipServer::currentPoseCallback, this, std::placeholders::_1));
-    scan_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("sacn", 1,
+    scan_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan", 10,
         std::bind(&SkipServer::scanCallback, this, std::placeholders::_1));
 
-    nav_handle_ = create_publisher<std_msgs::msg::String>("navigation_handle",10);
+    nav_handle_ = create_publisher<std_msgs::msg::String>("nav2_cancel",10);
 }
 
 void waypoint_function::SkipServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
@@ -30,30 +30,30 @@ void waypoint_function::SkipServer::FunctionCallback(const std::shared_ptr<waypo
 
 void waypoint_function::SkipServer::targetPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
-    tarPose_ptr_ = msg;
+    tarPoint = msg->pose.position;
 }
 
-void waypoint_function::SkipServer::currentPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+void waypoint_function::SkipServer::currentPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
-    curPose_ptr_ = msg;
+    curPoint = msg->pose.pose.position;
 }
 
 void waypoint_function::SkipServer::scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan_ptr_)
 {
     if(!skipAvairable_)return;
-    float distance = calc_distance(tarPose_ptr_->pose.position, curPose_ptr_->pose.position);
+
+    float distance = calc_distance(tarPoint, curPoint);
     if(distance > dist_tolerance_) return;
 
     int scan_count = 0;
-    for(auto value : scan_ptr_->ranges)
-    {
-        if(value < dist_tolerance_) scan_count++;
-    }
+    for(auto value : scan_ptr_->ranges) if(value < dist_tolerance_) scan_count++;
     if(scan_count > scan_tolerance_) executeSkip();
 }
 
 void waypoint_function::SkipServer::executeSkip()
 {
+    skipAvairable_ = false;
+    std::cout << "skip_server : Excute waypoint skip" << std::endl;
     std_msgs::msg::String msg;
     msg.data = "Next";
     nav_handle_->publish(msg);

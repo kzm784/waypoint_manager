@@ -31,8 +31,8 @@ WaypointNavigator::WaypointNavigator(const rclcpp::NodeOptions & options)
     // Action client for navigation
     nav2_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
     // Nav2 action handle
-    cancle_nav_handle_ = create_subscription<example_interfaces::msg::Empty>("/cancle_nav", 1,
-                            bind(&WaypointNavigator::CancleHandle, this, std::placeholders::_1));
+    cancel_handle_ = create_subscription<std_msgs::msg::String>("/nav2_cancel", 1,
+                            bind(&WaypointNavigator::CancelHandle, this, std::placeholders::_1));
 
     // Client to request waypoint_function
     waypoint_function_client_ = create_client<waypoint_function_msgs::srv::Command>("function_commands");
@@ -135,6 +135,7 @@ void WaypointNavigator::SendGoal()
 
             case rclcpp_action::ResultCode::CANCELED:
                 RCLCPP_INFO(get_logger(), "Nav2 Result Satus: CANCELED");
+                if(cancelState_ == "Next") SendCommands("end");
                 break;
 
             default:
@@ -181,16 +182,18 @@ void WaypointNavigator::ReceiveFunctionResults(const std::shared_ptr<waypoint_fu
 {
     for(auto &result_msg : request->data)
     {
-        RCLCPP_INFO(get_logger(), result_msg.c_str());
+        std::cout << result_msg << std::endl;
     }
     
     if(request->execute_state == "start") SendGoal();
     else if(request->execute_state == "end") ToNextWaypoint();
 }
 
-void WaypointNavigator::CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg)
+void WaypointNavigator::CancelHandle(const std_msgs::msg::String::SharedPtr msg)
 {
-    RCLCPP_INFO(get_logger(), "Nav2 Cancle Called");
+    std::cout << "Cancel Navigation Called" << std::endl;
+    cancelState_ = msg->data;
+    if(cancelState_ == "Next") nav2_pose_client_->async_cancel_all_goals();
 }
 
 void WaypointNavigator::ToNextWaypoint()
