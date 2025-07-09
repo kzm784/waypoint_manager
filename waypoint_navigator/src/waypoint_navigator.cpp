@@ -162,7 +162,8 @@ void WaypointNavigator::SendCommands(string execute_state)
 {
     if(function_commands_.size() == 0)
     {
-        ToNextWaypoint();
+        if(execute_state == "start") SendGoal();
+        else if(execute_state == "end") ToNextWaypoint();
         return;
     }
 
