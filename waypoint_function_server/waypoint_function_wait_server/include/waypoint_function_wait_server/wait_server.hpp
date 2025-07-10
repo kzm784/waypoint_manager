@@ -19,7 +19,7 @@ namespace waypoint_function
 
             std::string SERVER_NAME    = "wait_server";
             std::string COMMAND_HEADER = "wait";
-            std::string EXECUTE_STATE  = "start";
+            std::string EXECUTE_STATE  = "end";
     };
 }
 
