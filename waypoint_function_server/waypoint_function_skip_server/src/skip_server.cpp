@@ -8,7 +8,7 @@ waypoint_function::SkipServer::SkipServer(const rclcpp::NodeOptions &options) : 
 
     tarPose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>("next_waypoint_msg", 10,
         std::bind(&SkipServer::targetPoseCallback, this, std::placeholders::_1));
-    curPose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("amcl_pose", 10,
+    curPose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("current_pose", 10,
         std::bind(&SkipServer::currentPoseCallback, this, std::placeholders::_1));
     scan_sub_ = create_subscription<sensor_msgs::msg::LaserScan>("scan", 10,
         std::bind(&SkipServer::scanCallback, this, std::placeholders::_1));

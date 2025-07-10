@@ -17,7 +17,6 @@ def generate_launch_description():
         name='host_server',
         output='screen',
     )
-    ld.add_action(host_server_node)
     
     wait_server_node = Node(
         package="waypoint_function_wait_server",
@@ -25,7 +24,6 @@ def generate_launch_description():
         name='wait_server',
         output='screen',
     )
-    ld.add_action(wait_server_node)
 
     key_wait_server_node = Node(
         package="waypoint_function_wait_server",
@@ -33,7 +31,6 @@ def generate_launch_description():
         name='key_wait_server',
         output='screen',
     )
-    ld.add_action(key_wait_server_node)
 
     test_server_node = Node(
         package="waypoint_function_server_example",
@@ -41,7 +38,23 @@ def generate_launch_description():
         name='test_server',
         output='screen',
     )
-    ld.add_action(test_server_node)
+
+    skip_server_node = Node(
+        package="waypoint_function_skip_server",
+        executable='skip_server',
+        name='skip_server',
+        output = 'screen',
+        remappings=[
+            {'current_pose', 'current_pose'},
+            {'scan', 'scan'}
+        ]
+    )
+    
+    ld.add_action(host_server_node)
+    # ld.add_action(test_server_node)
+    ld.add_action(wait_server_node)
+    ld.add_action(key_wait_server_node)
+    ld.add_action(skip_server_node)
 
 
     return ld
