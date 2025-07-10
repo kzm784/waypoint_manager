@@ -45,8 +45,8 @@ def generate_launch_description():
         name='skip_server',
         output = 'screen',
         remappings=[
-            ("current_pose", "amcl_pose"),
-            ("scan", "scan"),
+            ("current_pose", "pcl_pose"),
+            ("scan", "livox_scan"),
         ],
     )
     
