@@ -194,7 +194,7 @@ void WaypointNavigator::CancelHandle(const std_msgs::msg::String::SharedPtr msg)
 {
     std::cout << "Cancel Navigation Called" << std::endl;
     cancelState_ = msg->data;
-    if(cancelState_ == "Next") nav2_pose_client_->async_cancel_all_goals();
+    nav2_pose_client_->async_cancel_all_goals();
 }
 
 void WaypointNavigator::ToNextWaypoint()
