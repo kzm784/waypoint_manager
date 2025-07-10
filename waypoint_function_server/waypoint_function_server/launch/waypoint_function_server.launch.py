@@ -45,9 +45,9 @@ def generate_launch_description():
         name='skip_server',
         output = 'screen',
         remappings=[
-            {'current_pose', 'current_pose'},
-            {'scan', 'scan'}
-        ]
+            ("current_pose", "amcl_pose"),
+            ("scan", "scan"),
+        ],
     )
     
     ld.add_action(host_server_node)
