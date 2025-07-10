@@ -7,10 +7,9 @@
 
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <example_interfaces/msg/empty.hpp>
-#include <example_interfaces/msg/string.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
 using namespace std;
@@ -27,7 +26,7 @@ private:
     void UpdateCommands();
     void SendCommands(string execute_state);
     void ReceiveFunctionResults(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
-    void CancleHandle(const example_interfaces::msg::Empty::SharedPtr msg);
+    void CancelHandle(const std_msgs::msg::String::SharedPtr msg);
     void ToNextWaypoint();
     void ToSameWaypoint();
 
@@ -43,7 +42,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr reached_waypoint_id_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr reached_waypoint_msg_pub_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav2_pose_client_;
-    rclcpp::Subscription<example_interfaces::msg::Empty>::SharedPtr cancle_nav_handle_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr cancel_handle_;
     rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedPtr waypoint_function_client_;
     rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr function_results_reciever_;
 
@@ -52,6 +51,8 @@ private:
     bool skip_enable_{false};
     bool function_enable_{false};
     bool nav2_enable_{true};
+    std::string cancelState_ ;
+    const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle_;
     std::vector<std::vector<std::string>> waypoints_data_;
     std::vector<std::string> function_commands_;
     geometry_msgs::msg::PoseStamped target_pose_;

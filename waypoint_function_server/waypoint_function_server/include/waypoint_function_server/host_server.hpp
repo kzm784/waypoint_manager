@@ -2,8 +2,8 @@
 #define WAYPOINT_MANAGER__WAYPOINT_FUNCTION_HOST_SERVER
 
 #include <rclcpp/rclcpp.hpp>
-#include <example_interfaces/msg/string.hpp>
-#include <example_interfaces/msg/empty.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <std_msgs/msg/empty.hpp>
 #include <waypoint_function_msgs/srv/command.hpp>
 
 #include "server_handle.hpp"
@@ -22,10 +22,10 @@ namespace waypoint_function
             void ServerApplyAcception(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
                             shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
             void Callback(const shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-                            shared_ptr<waypoint_function_msgs::srv::Command::Response> response);
+                            shared_ptr<waypoint_function_msgs::srv::Command::Response>);
             void ServerCall();
             void ReceiveSyncResponse(rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedFuture future);
-            void ReceiveAsyncResponse(const example_interfaces::msg::String::SharedPtr msg);
+            void ReceiveAsyncResponse(const std_msgs::msg::String::SharedPtr msg);
             void RunNextCommand();
             void SendFunctionResults();
             void ServerUpdate();
@@ -33,10 +33,10 @@ namespace waypoint_function
 
             rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr accept_apply_server_;
             rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr function_server_;
-            rclcpp::Subscription<example_interfaces::msg::String>::SharedPtr function_async_response_;
-            rclcpp::Publisher<example_interfaces::msg::String>::SharedPtr function_result_pub_;
+            rclcpp::Subscription<std_msgs::msg::String>::SharedPtr function_async_response_;
+            rclcpp::Publisher<std_msgs::msg::String>::SharedPtr function_result_pub_;
             rclcpp::Client<waypoint_function_msgs::srv::Command>::SharedPtr function_results_client_;
-            rclcpp::Publisher<example_interfaces::msg::Empty>::SharedPtr update_executor_;
+            rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr update_executor_;
 
             vector<waypoint_function::ServerHandle> server_handles_ ;
             vector<string> function_commands_;

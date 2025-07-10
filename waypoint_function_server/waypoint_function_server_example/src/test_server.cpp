@@ -5,7 +5,7 @@ waypoint_function::TestServer::TestServer( const rclcpp::NodeOptions& options) :
   ServerApply(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE);
 }
 
-void waypoint_function::TestServer::Update(const example_interfaces::msg::Empty::SharedPtr msg)
+void waypoint_function::TestServer::Update(const std_msgs::msg::Empty::SharedPtr)
 {
     RCLCPP_INFO(this->get_logger(), "Update Called");
 }
