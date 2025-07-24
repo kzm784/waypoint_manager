@@ -1,0 +1,19 @@
+<library path="waypoint_rviz_plugins">
+  <class name="waypoint_rviz_plugins/PauseEndTool"
+         type="waypoint_rviz_plugins::PauseEndTool"
+         base_class_type="rviz_common::Tool">
+    <description>Pause End Tool</description>
+  </class>
+
+  <class name="waypoint_rviz_plugins/WaypointMarkerTool"
+        type="waypoint_rviz_plugins::WaypointMarkerTool"
+        base_class_type="rviz_common::Tool">
+    <description>Add Waypoint Tool</description>
+  </class>
+
+  <class name="waypoint_rviz_plugins/WaypointEditerPanel"
+        type="waypoint_rviz_plugins::WaypointEditerPanel"
+        base_class_type="rviz_common::Panel">
+    <description>Waypoint Editer Panel</description>
+  </class>
+</library>

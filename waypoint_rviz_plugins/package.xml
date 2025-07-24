@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>waypoint_rviz_plugins</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="kazulab10969@outlook.jp">kazuma</maintainer>
+  <license>TODO: License declaration</license>
+
+  <build_depend>rviz2</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>libqt5-core</build_depend>
+  <build_depend>libqt5-gui</build_depend>
+  <build_depend>libqt5-widgets</build_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>rviz_common</build_depend>
+  <build_depend>rviz_default_plugins</build_depend>
+  <build_depend>interactive_markers</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>nav2_msgs</build_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
+
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>std_srv</exec_depend>
+  <exec_depend>nav2_srv</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

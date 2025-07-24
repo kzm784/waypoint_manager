@@ -12,13 +12,15 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Set the path to the waypoint CSV
-    navigation_data_dir = os.getenv('NAVIGATION_DATA_DIR')
-    navigation_data_name = os.getenv('NAVIGATION_DATA_NAME')
-    waypoints_csv_path = os.path.join(
-        navigation_data_dir,
-        navigation_data_name,
-        f"{navigation_data_name}_wp.csv"
-    )
+    # navigation_data_dir = os.getenv('NAVIGATION_DATA_DIR')
+    # navigation_data_name = os.getenv('NAVIGATION_DATA_NAME')
+    # waypoints_csv_path = os.path.join(
+    #     navigation_data_dir,
+    #     navigation_data_name,
+    #     f"{navigation_data_name}_wp.csv"
+    # )
+
+    waypoints_csv_path = os.path.join("/home/racc_man/maps/test_wp.csv")
 
     # Set the path to the waypoint_manager config
     waypoint_manager_config = launch.substitutions.LaunchConfiguration(
@@ -28,6 +30,16 @@ def generate_launch_description():
                 'config',
                 'config_waypoint_manager.yaml'
         )
+    )
+    
+    waypoint_visualizer_node = Node(
+        package="waypoint_visualizer",
+        executable='waypoint_visualizer_node',
+        name='waypoint_visualizer_node',
+        output='screen',
+        parameters=[waypoint_manager_config, {
+                'waypoints_csv': waypoints_csv_path
+        }]
     )
 
     waypoint_navigator_node = Node(
@@ -39,18 +51,9 @@ def generate_launch_description():
                 'waypoints_csv': waypoints_csv_path
         }]
     )
-
-    waypoint_visualizer_node = Node(
-        package="waypoint_visualizer",
-        executable='waypoint_visualizer_node',
-        name='waypoint_visualizer_node',
-        output='screen',
-        parameters=[waypoint_manager_config, {
-                'waypoints_csv': waypoints_csv_path
-        }]
-    )
     
-    ld.add_action(waypoint_navigator_node)
     ld.add_action(waypoint_visualizer_node)
+    ld.add_action(waypoint_navigator_node)
+
 
     return ld

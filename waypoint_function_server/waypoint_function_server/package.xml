@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>waypoint_manager</name>
+  <name>waypoint_function_server</name>
   <version>0.0.0</version>
-  <description>waypoint_manager</description>
+  <description>waypoint_function_server</description>
   <maintainer email="kazulab10969@outlook.jp">Kazuma Yagi</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>waypoint_editer</depend>
-  <depend>waypoint_manager_utils</depend>
-  <depend>waypoint_navigator</depend>
-  <depend>waypoint_function_server</depend>
-  <depend>waypoint_visualizer</depend>
-
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>rclcpp_action</depend>
+  <depend>std_msgs</depend>
+  <depend>waypoint_function_msgs</depend>
+  
   <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
