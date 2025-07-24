@@ -3,6 +3,7 @@
 
 #include <waypoint_function_server/function_server_node.hpp>
 
+#include <rclcpp/qos.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
@@ -28,7 +29,7 @@ namespace waypoint_function
             float calc_distance(geometry_msgs::msg::Point pos1, geometry_msgs::msg::Point pos2);
 
 			bool skipAvairable_;
-			float dist_tolerance_ = 1.0;
+			float dist_tolerance_ = 3.0;
 			int scan_tolerance_ = 10;
             geometry_msgs::msg::Point tarPoint;
             geometry_msgs::msg::Point curPoint;
