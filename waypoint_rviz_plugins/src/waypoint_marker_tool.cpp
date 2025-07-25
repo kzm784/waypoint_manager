@@ -352,13 +352,12 @@ void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv
     if (!qpath.endsWith(".csv", Qt::CaseInsensitive)) {
         qpath += ".csv";
     }
-
     const std::string path = qpath.toStdString();
 
     std::ofstream ofs(path);
     if (!ofs) {
         QMessageBox::warning(nullptr, tr("Error"),
-        tr("Cannot open file:\n%1").arg(qpath));
+            tr("Cannot open file:\n%1").arg(qpath));
         res->success = false;
         res->message = "Failed to open file: " + path;
         return;
@@ -366,45 +365,46 @@ void WaypointMarkerTool::handleSaveWaypoints(const std::shared_ptr<std_srvs::srv
 
     std::vector<std::vector<std::string>> all_cmds;
     all_cmds.reserve(waypoints_.size());
-
     size_t max_cmds = 0;
     for (const auto & wp : waypoints_) {
-    std::vector<std::string> parts;
-    std::istringstream ss(wp.function_command);
-    std::string token;
-    while (std::getline(ss, token, ',')) {
-        parts.push_back(token);
-    }
-    max_cmds = std::max(max_cmds, parts.size());
-    all_cmds.push_back(std::move(parts));
+        std::vector<std::string> parts;
+        std::istringstream ss(wp.function_command);
+        std::string token;
+        while (std::getline(ss, token, ',')) {
+            parts.push_back(token);
+        }
+        max_cmds = std::max(max_cmds, parts.size());
+        all_cmds.push_back(std::move(parts));
     }
 
     ofs << "id,pose_x,pose_y,pose_z,rot_x,rot_y,rot_z,rot_w,command";
-    ofs << "\n";
+    for (size_t j = 1; j < max_cmds; ++j) {
+        ofs << ",";
+    }
+    ofs << ",\n";
 
     for (size_t i = 0; i < waypoints_.size(); ++i) {
-    const auto & p = waypoints_[i].pose.pose;
-    ofs
-        << i << ","
-        << p.position.x << "," << p.position.y << "," << p.position.z << ","
-        << p.orientation.x << "," << p.orientation.y << ","
-        << p.orientation.z << "," << p.orientation.w;
+        const auto & p = waypoints_[i].pose.pose;
+        ofs
+          << i << ","
+          << p.position.x << "," << p.position.y << "," << p.position.z << ","
+          << p.orientation.x << "," << p.orientation.y << ","
+          << p.orientation.z << "," << p.orientation.w;
 
-    const auto & parts = all_cmds[i];
-    for (size_t j = 0; j < max_cmds; ++j) {
-        if (j < parts.size()) {
-        ofs << "," << parts[j];
-        } else {
-        ofs << ",";
+        const auto & parts = all_cmds[i];
+        for (size_t j = 0; j < max_cmds; ++j) {
+            ofs << ",";
+            if (j < parts.size()) {
+                ofs << parts[j];
+            }
         }
+        ofs << ",\n";
     }
-    ofs << "\n";
-    }
-    
-    ofs.close();
 
+    ofs.close();
     res->success = true;
     res->message = "Saved " + std::to_string(waypoints_.size()) + " waypoints to " + path;
+    return;
 }
 
 void WaypointMarkerTool::handleLoadWaypoints(const std::shared_ptr<std_srvs::srv::Trigger::Request> req, std::shared_ptr<std_srvs::srv::Trigger::Response> res)
