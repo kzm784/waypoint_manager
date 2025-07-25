@@ -217,7 +217,8 @@ void WaypointMarkerTool::processFeedback(const std::shared_ptr<const visualizati
             waypoints_[id].pose.pose.orientation.z = fb->pose.orientation.z;
             waypoints_[id].pose.pose.orientation.w = fb->pose.orientation.w;
 
-            updateWaypointMarker();
+            server_->setPose(fb->marker_name, fb->pose);
+            server_->applyChanges();
             break;
 
         case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
