@@ -74,7 +74,12 @@ void WaypointMarkerTool::onPoseSet(double x, double y, double theta)
     wp.function_command.clear();
 
     waypoints_.push_back(std::move(wp));
-    updateWaypointMarker();
+    
+    int new_id = static_cast<int>(waypoints_.size() - 1);
+    auto int_marker = createWaypointMarker(new_id);
+    server_->insert(int_marker, std::bind(&WaypointMarkerTool::processFeedback, this, _1));
+    server_->applyChanges();
+    RCLCPP_INFO(nh_->get_logger(), "Added waypoint %d", new_id);
     
     deactivate();
 }
