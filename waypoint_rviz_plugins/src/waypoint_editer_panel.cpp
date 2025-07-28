@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/display_context.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <nav2_msgs/srv/load_map.hpp>
 
 #include "waypoint_rviz_plugins/waypoint_editer_panel.hpp"
 
@@ -83,11 +84,11 @@ void WaypointEditerPanel::onLoad2DMap()
     load_map_client_->async_send_request(req,
         [this, qpath](rclcpp::Client<nav2_msgs::srv::LoadMap>::SharedFuture future) {
         auto res = future.get();
-        bool ok           = res->result;
+        bool ok = (res->result == nav2_msgs::srv::LoadMap::Response::RESULT_SUCCESS);
 
-        // メインスレッドで UI 更新
         QString status = QString("%1: %2")
-            .arg(ok ? "Map loaded" : "Map load failed");
+            .arg(ok ? "Map loaded" : "Map load failed")
+            .arg(qpath);
         QMetaObject::invokeMethod(status_label_, "setText",
             Qt::QueuedConnection,
             Q_ARG(QString, status));
