@@ -16,8 +16,6 @@ find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
 
 set(waypoint_rviz_plugins_headers
   include/waypoint_rviz_plugins/pause_end_tool.hpp
-  include/waypoint_rviz_plugins/waypoint_marker_tool.hpp
-  include/waypoint_rviz_plugins/waypoint_editer_panel.hpp
 )
 qt5_wrap_cpp(waypoint_rviz_plugins_moc
   ${waypoint_rviz_plugins_headers}
@@ -30,8 +28,6 @@ set(CMAKE_AUTORCC ON)
 
 add_library(${PROJECT_NAME} SHARED
   src/pause_end_tool.cpp
-  src/waypoint_marker_tool.cpp
-  src/waypoint_editer_panel.cpp
   ${waypoint_rviz_plugins_moc}
 )
 
