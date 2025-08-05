@@ -6,6 +6,12 @@ waypoint_function::SkipServer::SkipServer(const rclcpp::NodeOptions &options) : 
 {
     ServerApply(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE);
 
+    declare_parameter<float>("dist_tolerance", 3.0);
+    declare_parameter<int32_t>("scan_tolerance", 10);
+    
+    get_parameter("dist_tolerance", dist_tolerance_);
+    get_parameter("scan_tolerance", scan_tolerance_);
+
     tarPose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>("next_waypoint_msg", 10,
         std::bind(&SkipServer::targetPoseCallback, this, std::placeholders::_1));
     curPose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("current_pose", 10,
