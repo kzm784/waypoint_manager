@@ -179,7 +179,7 @@ void WaypointNavigator::SendCommands(string execute_state)
     waypoint_function_client_->async_send_request(request);
 }
 
-void WaypointNavigator::ReceiveFunctionResults(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void WaypointNavigator::ReceiveFunctionResults(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,const std::shared_ptr<waypoint_function_msgs::srv::Command::Response> /*response*/)
 {
     for(auto &result_msg : request->data)
     {

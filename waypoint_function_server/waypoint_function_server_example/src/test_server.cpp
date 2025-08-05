@@ -10,8 +10,7 @@ void waypoint_function::TestServer::Update(const std_msgs::msg::Empty::SharedPtr
     RCLCPP_INFO(this->get_logger(), "Update Called");
 }
 
-void waypoint_function::TestServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request,
-        std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::TestServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> /*request*/, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> /*response*/)
 {
     RCLCPP_INFO(this->get_logger(), "Test Server Callback awake");
     std::string result_msg = "test_server:complete";

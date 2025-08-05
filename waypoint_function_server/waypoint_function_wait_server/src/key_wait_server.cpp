@@ -9,7 +9,7 @@ waypoint_function::KeyWaitServer::KeyWaitServer(const rclcpp::NodeOptions &optio
     isWaiting_ = false;
 }
 
-void waypoint_function::KeyWaitServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::KeyWaitServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> /*request*/, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> /*response*/)
 {
     RCLCPP_INFO(get_logger(), "Key Wait Server Called.");
     isWaiting_ = true;

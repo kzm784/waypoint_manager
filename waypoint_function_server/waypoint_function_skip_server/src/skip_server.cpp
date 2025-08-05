@@ -21,7 +21,7 @@ void waypoint_function::SkipServer::Update(const std_msgs::msg::Empty::SharedPtr
     skipAvairable_ = false;
 }
 
-void waypoint_function::SkipServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::SkipServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> /*request*/, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
     RCLCPP_INFO(get_logger(), "Skip Server Called.");
     skipAvairable_ = true;
