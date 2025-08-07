@@ -1,4 +1,4 @@
-#include "waypoint_function_server_example/test_server.hpp"
+#include "waypoint_function_example_server/test_server.hpp"
 
 waypoint_function::TestServer::TestServer( const rclcpp::NodeOptions& options) : FunctionServerNode("test_server_node", options) 
 {

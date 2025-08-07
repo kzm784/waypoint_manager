@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(waypoint_function_server_example)
+project(waypoint_function_example_server)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -10,11 +10,29 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/test_server.cpp
+  src/skip_server.cpp
+  src/wait_server.cpp
+  src/pause_server.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "waypoint_function::TestServer"
   EXECUTABLE test_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_function::SkipServer"
+  EXECUTABLE skip_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_function::WaitServer"
+  EXECUTABLE wait_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_function::PauseServer"
+  EXECUTABLE pause_server
 )
 
 target_link_libraries(${PROJECT_NAME})

@@ -1,4 +1,4 @@
-#include "waypoint_function_skip_server/skip_server.hpp"
+#include "waypoint_function_example_server/skip_server.hpp"
 
 using namespace std::chrono_literals;
 

@@ -20,7 +20,7 @@ def generate_launch_description():
     #     f"{navigation_data_name}_wp.csv"
     # )
 
-    waypoints_csv_path = os.path.join("/home/racc_man/maps/test_wp.csv")
+    waypoints_csv_path = os.path.join("/home/kazuma/navigation_data/megarover_samples/megarover_samples_wp.csv")
 
     # Set the path to the waypoint_manager config
     waypoint_manager_config = launch.substitutions.LaunchConfiguration(
