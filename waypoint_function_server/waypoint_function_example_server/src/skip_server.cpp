@@ -1,10 +1,16 @@
-#include "waypoint_function_skip_server/skip_server.hpp"
+#include "waypoint_function_example_server/skip_server.hpp"
 
 using namespace std::chrono_literals;
 
 waypoint_function::SkipServer::SkipServer(const rclcpp::NodeOptions &options) : FunctionServerNode("skip_server_node", options) 
 {
     ServerApply(SERVER_NAME, COMMAND_HEADER, EXECUTE_STATE);
+
+    declare_parameter<float>("dist_tolerance", 3.0);
+    declare_parameter<int32_t>("scan_tolerance", 10);
+    
+    get_parameter("dist_tolerance", dist_tolerance_);
+    get_parameter("scan_tolerance", scan_tolerance_);
 
     tarPose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>("next_waypoint_msg", 10,
         std::bind(&SkipServer::targetPoseCallback, this, std::placeholders::_1));
@@ -21,7 +27,7 @@ void waypoint_function::SkipServer::Update(const std_msgs::msg::Empty::SharedPtr
     skipAvairable_ = false;
 }
 
-void waypoint_function::SkipServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> request, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
+void waypoint_function::SkipServer::FunctionCallback(const std::shared_ptr<waypoint_function_msgs::srv::Command::Request> /*request*/, std::shared_ptr<waypoint_function_msgs::srv::Command::Response> response)
 {
     RCLCPP_INFO(get_logger(), "Skip Server Called.");
     skipAvairable_ = true;
