@@ -71,7 +71,7 @@ void WaypointNavigator::UpdateWaypointID()
         if (!loop_enable_ || (loop_count_ < 1))
         {
             RCLCPP_INFO(get_logger(), "Completed Navigation!");
-            rclcpp::shutdown();
+            nav_finished_ = true;
             return;
         }
         else
@@ -85,6 +85,7 @@ void WaypointNavigator::UpdateWaypointID()
 
 void WaypointNavigator::UpdateGoal()
 {
+    if (nav_finished_) return;
     if (waypoints_data_.empty() || waypoint_id_ >= static_cast<int>(waypoints_data_.size())) return;
 
 
@@ -148,8 +149,10 @@ void WaypointNavigator::SendGoal()
 
 void WaypointNavigator::UpdateCommands()
 {
+    function_commands_.clear();
+    if (waypoints_data_.empty() || waypoint_id_ < 0 || waypoint_id_ >= static_cast<int>(waypoints_data_.size())) return;
+    
     // Update Function Command
-    function_commands_ = {};
     int data_length = waypoints_data_[waypoint_id_].size();
     for (int i=8; i<data_length; i++)
     {
@@ -160,6 +163,8 @@ void WaypointNavigator::UpdateCommands()
 
 void WaypointNavigator::SendCommands(string execute_state)
 {
+    if (nav_finished_) return;
+
     if(function_commands_.size() == 0)
     {
         if(execute_state == "start") SendGoal();
@@ -199,7 +204,11 @@ void WaypointNavigator::CancelHandle(const std_msgs::msg::String::SharedPtr msg)
 
 void WaypointNavigator::ToNextWaypoint()
 {
+    if (nav_finished_) return;
+
     UpdateWaypointID();
+    if (nav_finished_) return;
+
     UpdateGoal();
     UpdateCommands();
     SendCommands("start");
