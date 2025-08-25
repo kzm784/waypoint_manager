@@ -64,12 +64,12 @@ def generate_launch_description():
     delayed_nodes = TimerAction(
         period=3.0,
         actions=[
-            waypoint_visualizer_node,
             waypoint_navigator_node
         ]
     )
 
     ld.add_action(declare_waypoints_csv)
+    ld.add_action(waypoint_visualizer_node)
     ld.add_action(function_server_launch)
     ld.add_action(delayed_nodes)
 
