@@ -20,9 +20,6 @@ waypoint_function::SkipServer::SkipServer(const rclcpp::NodeOptions &options) : 
         std::bind(&SkipServer::scanCallback, this, std::placeholders::_1));
 
     nav_handle_ = create_publisher<std_msgs::msg::String>("nav2_cancel",10);
-
-    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(get_clock());
-    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
 void waypoint_function::SkipServer::Update(const std_msgs::msg::Empty::SharedPtr)
@@ -39,12 +36,12 @@ void waypoint_function::SkipServer::FunctionCallback(const std::shared_ptr<waypo
 
 void waypoint_function::SkipServer::targetPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
-    tarPoint = msg->pose.position;
+    tarPose_ = msg->pose;
 }
 
 void waypoint_function::SkipServer::currentPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
-    curPoint = msg->pose.pose.position;
+    curPose_ = msg->pose.pose;
 }
 
 void waypoint_function::SkipServer::scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan_ptr_)
@@ -52,59 +49,46 @@ void waypoint_function::SkipServer::scanCallback(const sensor_msgs::msg::LaserSc
     if (!skipAvairable_) return;
 
     const float tol2 = dist_tolerance_ * dist_tolerance_;
-    const float dist2_wp = calc_dist2(tarPoint, curPoint);
+    const float dist2_wp = calc_dist2(tarPose_.position, curPose_.position);
     if (dist2_wp > tol2) return;
 
-    const std::string scan_frame = scan_ptr_->header.frame_id;
-    const rclcpp::Time scan_time = scan_ptr_->header.stamp;
+    tf2::Quaternion q;
+    tf2::fromMsg(curPose_.orientation, q);
+    double roll, pitch, yaw;
+    tf2::getEulerYPR(q, yaw, pitch, roll);
 
-    geometry_msgs::msg::PointStamped wp_map, wp_scan;
-    wp_map.header.frame_id = "map";
-    wp_map.header.stamp    = scan_time;
-    wp_map.point           = tarPoint;
+    const float cos_yaw = std::cos(yaw);
+    const float sin_yaw = std::sin(yaw);
+    const float rx = curPose_.position.x;
+    const float ry = curPose_.position.y;
 
-    using namespace std::chrono_literals;
-    if (!tf_buffer_->canTransform(scan_frame, "map", scan_time, 100ms)) {
-        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000, "TF not available (map->%s)", scan_frame.c_str());
-        return;
-    }
-    try {
-        const auto tf_map_to_scan = tf_buffer_->lookupTransform(scan_frame, "map", scan_time, 100ms);
-        tf2::doTransform(wp_map, wp_scan, tf_map_to_scan);
-    } catch (const tf2::TransformException &ex) {
-        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000, "TF transform failed (map->%s): %s", scan_frame.c_str(), ex.what());
-        return;
-    }
-
-    const float wx = static_cast<float>(wp_scan.point.x);
-    const float wy = static_cast<float>(wp_scan.point.y);
-
-    const float a_min = scan_ptr_->angle_min;
-    const float a_inc = scan_ptr_->angle_increment;
-    const float r_min = scan_ptr_->range_min;
-    const float r_max = scan_ptr_->range_max;
-
-    int scan_count = 0;
-    const auto &ranges = scan_ptr_->ranges;
-    for (size_t i = 0; i < ranges.size(); ++i) {
-        const float r = ranges[i];
+    int laser_cnt = 0;
+    for (size_t i = 0; i < scan_ptr_->ranges.size(); ++i)
+    {
+        const float r = scan_ptr_->ranges[i];
         if (!std::isfinite(r)) continue;
-        if (r < r_min || r > r_max) continue;
+        if (r < scan_ptr_->range_min || r > scan_ptr_->range_max) continue;
 
-        const float ang = a_min + static_cast<float>(i) * a_inc;
-        const float rx  = r * std::cos(ang);
-        const float ry  = r * std::sin(ang);
+        const float theta_l = scan_ptr_->angle_min + scan_ptr_->angle_increment * static_cast<float>(i);
+        const float px_l = r * std::cos(theta_l);
+        const float py_l = r * std::sin(theta_l);
 
-        const float dx = rx - wx;
-        const float dy = ry - wy;
+        const float px_map = rx + cos_yaw * px_l - sin_yaw * py_l;
+        const float py_map = ry + sin_yaw * px_l + cos_yaw * py_l;
+
+        const float dx = tarPose_.position.x - px_map;
+        const float dy = tarPose_.position.y - py_map;
         const float d2 = dx*dx + dy*dy;
-        if (d2 <= tol2) ++scan_count;
+
+        if (d2 < tol2)
+        {
+            ++laser_cnt;
+            if (laser_cnt >= scan_tolerance_) break;
+        }
     }
 
-    if (scan_count > scan_tolerance_) {
-        executeSkip();
-    }
-}
+    if (laser_cnt >= scan_tolerance_) executeSkip();
+}    
 
 void waypoint_function::SkipServer::executeSkip()
 {

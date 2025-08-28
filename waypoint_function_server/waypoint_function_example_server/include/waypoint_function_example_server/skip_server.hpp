@@ -4,12 +4,13 @@
 #include <waypoint_function_server/function_server_node.hpp>
 
 #include <rclcpp/qos.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
+#include <tf2/utils.h> 
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <cmath>
@@ -34,15 +35,13 @@ namespace waypoint_function
 			bool skipAvairable_;
 			float dist_tolerance_{3.0f};
 			int scan_tolerance_{10};
-            geometry_msgs::msg::Point tarPoint;
-            geometry_msgs::msg::Point curPoint;
+            geometry_msgs::msg::Pose tarPose_;
+            geometry_msgs::msg::Pose curPose_;
 
             rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr tarPose_sub_;
             rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr curPose_sub_;
             rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
             rclcpp::Publisher<std_msgs::msg::String>::SharedPtr nav_handle_;
-            std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-            std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
             std::string SERVER_NAME    = "skip_server";
             std::string COMMAND_HEADER = "skip";

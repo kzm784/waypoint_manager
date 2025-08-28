@@ -10,5 +10,5 @@ waypoint_visualizer_node:
 
 skip_server_node:
   ros__parameters:
-    dist_tolerance: 3.0
-    scan_tolerance: 10    
+    dist_tolerance: 1.0
+    scan_tolerance: -1   

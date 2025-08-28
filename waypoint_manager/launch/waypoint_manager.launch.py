@@ -37,7 +37,7 @@ def generate_launch_description():
             )
         ),
         launch_arguments={
-            'waypoit_function_server_config' : waypoint_manager_config,
+            'waypoint_function_server_config' : waypoint_manager_config,
         }.items()
     )
 
