@@ -19,12 +19,12 @@ def generate_launch_description():
     )
     waypoints_csv_path = LaunchConfiguration('waypoints')
 
-    declare_waypoints_start_id = DeclareLaunchArgument(
-        'start_waypoint_id',
+    declare_start_id = DeclareLaunchArgument(
+        'start_id',
         default_value='0',
         description='Start waypoint id'
     )
-    start_waypoint_id = LaunchConfiguration('start_waypoint_id')
+    start_id = LaunchConfiguration('start_id')
 
     waypoint_manager_config = LaunchConfiguration(
         'waypoint_manager_config',
@@ -65,7 +65,7 @@ def generate_launch_description():
         output='screen',
         parameters=[waypoint_manager_config, {
             'waypoints_csv': waypoints_csv_path,
-            'start_waypoint_id': start_waypoint_id
+            'start_id': start_id
         }]
     )
 
@@ -77,7 +77,7 @@ def generate_launch_description():
     )
 
     ld.add_action(declare_waypoints_csv)
-    ld.add_action(declare_waypoints_start_id)
+    ld.add_action(declare_start_id)
     ld.add_action(waypoint_visualizer_node)
     ld.add_action(function_server_launch)
     ld.add_action(delayed_nodes)

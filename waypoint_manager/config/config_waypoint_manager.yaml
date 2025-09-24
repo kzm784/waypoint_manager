@@ -1,6 +1,6 @@
 waypoint_navigator_node:
   ros__parameters:
-    start_waypoint_id: 0
+    start_id: 0
     loop_enable: true
     loop_count: 2
 
