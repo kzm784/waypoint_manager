@@ -47,6 +47,7 @@ private:
     rclcpp::Service<waypoint_function_msgs::srv::Command>::SharedPtr function_results_reciever_;
 
     // State variables
+    bool nav_finished_{false};
     bool retry_once_{false};
     bool skip_enable_{false};
     bool function_enable_{false};

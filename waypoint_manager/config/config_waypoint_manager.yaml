@@ -1,9 +1,14 @@
 waypoint_navigator_node:
   ros__parameters:
-    start_waypoint_id: 0
+    start_id: 0
     loop_enable: true
     loop_count: 2
 
 waypoint_visualizer_node:
   ros__parameters:
     visualization_frame_id: "map"
+
+skip_server_node:
+  ros__parameters:
+    dist_tolerance: 2.5
+    scan_tolerance: 5

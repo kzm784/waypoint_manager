@@ -4,10 +4,14 @@
 #include <waypoint_function_server/function_server_node.hpp>
 
 #include <rclcpp/qos.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <tf2/utils.h> 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <cmath>
 
@@ -26,13 +30,13 @@ namespace waypoint_function
 			void currentPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 			void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
 			void executeSkip();
-            float calc_distance(geometry_msgs::msg::Point pos1, geometry_msgs::msg::Point pos2);
+            float calc_dist2(geometry_msgs::msg::Point pos1, geometry_msgs::msg::Point pos2);
 
 			bool skipAvairable_;
-			float dist_tolerance_ = 3.0;
-			int scan_tolerance_ = 10;
-            geometry_msgs::msg::Point tarPoint;
-            geometry_msgs::msg::Point curPoint;
+			float dist_tolerance_{3.0f};
+			int scan_tolerance_{10};
+            geometry_msgs::msg::Pose tarPose_;
+            geometry_msgs::msg::Pose curPose_;
 
             rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr tarPose_sub_;
             rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr curPose_sub_;

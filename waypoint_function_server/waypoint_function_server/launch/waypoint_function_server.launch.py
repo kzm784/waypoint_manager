@@ -1,25 +1,23 @@
 import os
-import launch
-import launch_ros
-
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
     ld = LaunchDescription()
 
-    # Set the path to the waypoint_navigator config
-    waypoint_function_server_config = launch.substitutions.LaunchConfiguration(
+    declare_waypoint_function_server_config = DeclareLaunchArgument(
         'waypoint_function_server_config',
-        default=os.path.join(
+        default_value=os.path.join(
             get_package_share_directory('waypoint_function_server'),
-                'config',
-                'config_waypoint_function_server.yaml'
+            'config',
+            'config_waypoint_function_server.yaml'
         )
     )
+    waypoint_function_server_config = LaunchConfiguration('waypoint_function_server_config')
 
     host_server_node = Node(
         package="waypoint_function_server",
@@ -61,11 +59,11 @@ def generate_launch_description():
         ],
     )
     
+    ld.add_action(declare_waypoint_function_server_config)
     ld.add_action(host_server_node)
     # ld.add_action(test_server_node)
     ld.add_action(wait_server_node)
     ld.add_action(pause_server_node)
     ld.add_action(skip_server_node)
-
 
     return ld
