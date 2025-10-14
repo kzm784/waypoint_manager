@@ -13,6 +13,7 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   src/skip_server.cpp
   src/wait_server.cpp
   src/pause_server.cpp
+  src/lineup_server.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
@@ -33,6 +34,11 @@ rclcpp_components_register_node(${PROJECT_NAME}
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "waypoint_function::PauseServer"
   EXECUTABLE pause_server
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "waypoint_function::LineupServer"
+  EXECUTABLE lineup_server
 )
 
 target_link_libraries(${PROJECT_NAME})
