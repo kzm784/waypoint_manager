@@ -1,4 +1,4 @@
-#include "waypoint_function_lineup_server/lineup_server.hpp"
+#include "waypoint_function_example_server/lineup_server.hpp"
 
 using namespace std::chrono_literals;
 

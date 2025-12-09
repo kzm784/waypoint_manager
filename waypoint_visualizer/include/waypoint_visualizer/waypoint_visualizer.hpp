@@ -3,6 +3,9 @@
 
 #include <chrono>
 #include <cmath>
+#include <string>
+#include <vector>
+
 #include <rclcpp/rclcpp.hpp>
 #include <waypoint_manager_utils/waypoint_manager_utils.hpp>
 
@@ -36,7 +39,7 @@ private:
 
     // State variables
     int32_t current_waypoint_id_{-1};
-    std::vector<std::vector<std::string>> waypoints_data_;
+    std::vector<waypoint_manager_utils::Waypoint> waypoints_;
     visualization_msgs::msg::MarkerArray sphere_markers_;
     visualization_msgs::msg::MarkerArray text_markers_;
     visualization_msgs::msg::MarkerArray line_markers_;

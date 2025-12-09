@@ -1,47 +1,24 @@
 #ifndef WAYPOINT_MANAGER__WAYPOINT_MANAGER_UTILS_
 #define WAYPOINT_MANAGER__WAYPOINT_MANAGER_UTILS_
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
+#include <cstdint>
 #include <string>
+#include <vector>
+
+#include <geometry_msgs/msg/pose.hpp>
 
 namespace waypoint_manager_utils
 {
 
-std::vector<std::vector<std::string>> loadWaypointsFromCSV(const std::string& file_path)
+struct Waypoint
 {
-    std::ifstream file(file_path);
-    if (!file.is_open()) return {};
-    
-    std::vector<std::vector<std::string>> waypoints_data;
-    std::string line;
-    bool is_header = true;
+  int32_t id{0};
+  geometry_msgs::msg::Pose pose;
+  std::vector<std::string> commands;
+};
 
-    while (std::getline(file, line))
-    {
-        std::stringstream line_stream(line);
-        std::vector<std::string> row;
-        std::string cell;
+std::vector<Waypoint> loadWaypointsFromCSV(const std::string & file_path);
 
-        if (is_header)
-        {
-            is_header = false;
-            continue;
-        }
-
-        while (std::getline(line_stream, cell, ','))
-        {
-            row.push_back(cell);
-        }
-
-        waypoints_data.push_back(row);
-    }
-
-    return waypoints_data;
-}
-
-}   // namespace waypoint_manager_utils
+}  // namespace waypoint_manager_utils
 
 #endif  // WAYPOINT_MANAGER__WAYPOINT_MANAGER_UTILS_

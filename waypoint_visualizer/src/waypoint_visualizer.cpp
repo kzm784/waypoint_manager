@@ -1,7 +1,4 @@
-
 #include "waypoint_visualizer/waypoint_visualizer.hpp"
-
-using namespace waypoint_manager_utils;
 
 WaypointVisualizer::WaypointVisualizer(const rclcpp::NodeOptions & options)
 : Node("waypoint_visualizer", options)
@@ -24,8 +21,8 @@ WaypointVisualizer::WaypointVisualizer(const rclcpp::NodeOptions & options)
     arrow_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("waypoint/arrow_markers", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
 
     // Load Waypoints from CSV
-    waypoints_data_ = loadWaypointsFromCSV(waypoints_csv_);
-    if (!waypoints_data_.empty())
+    waypoints_ = waypoint_manager_utils::loadWaypointsFromCSV(waypoints_csv_);
+    if (!waypoints_.empty())
     {
         createMarkers();
     }
@@ -38,42 +35,36 @@ WaypointVisualizer::WaypointVisualizer(const rclcpp::NodeOptions & options)
 
 void WaypointVisualizer::createMarkers()
 {
-    for (size_t i = 0; i < waypoints_data_.size(); i++)
+    sphere_markers_.markers.clear();
+    text_markers_.markers.clear();
+    line_markers_.markers.clear();
+    arrow_markers_.markers.clear();
+
+    for (size_t i = 0; i < waypoints_.size(); ++i)
     {
-        geometry_msgs::msg::Pose waypoint_pose;
+        const auto & waypoint = waypoints_[i];
+        const auto & pose = waypoint.pose;
 
-        int waypoint_id = std::stoi(waypoints_data_[i][0]);
-        waypoint_pose.position.x = std::stod(waypoints_data_[i][1]);
-        waypoint_pose.position.y = std::stod(waypoints_data_[i][2]);
-        waypoint_pose.position.z = std::stod(waypoints_data_[i][3]);
-        waypoint_pose.orientation.x = std::stod(waypoints_data_[i][4]);
-        waypoint_pose.orientation.y = std::stod(waypoints_data_[i][5]);
-        waypoint_pose.orientation.z = std::stod(waypoints_data_[i][6]);
-        waypoint_pose.orientation.w = std::stod(waypoints_data_[i][7]);
-
-        std::string function_commands = "";
-        for (size_t j = 8; j < waypoints_data_[i].size(); j++)
+        std::string function_commands;
+        for (size_t j = 0; j < waypoint.commands.size(); ++j)
         {
-            if (!function_commands.empty())
+            if (j > 0)
             {
                 function_commands += ",";
             }
-            function_commands += waypoints_data_[i][j];
+            function_commands += waypoint.commands[j];
         }
 
-        double yaw = tf2::getYaw(waypoint_pose.orientation);
+        const double yaw = tf2::getYaw(pose.orientation);
 
-        // Create SPHERE Marker
         visualization_msgs::msg::Marker sphere_marker;
         sphere_marker.header.frame_id = visualization_frame_id_;
         sphere_marker.header.stamp = this->now();
         sphere_marker.ns = "waypoints_sphere";
-        sphere_marker.id = waypoint_id;
+        sphere_marker.id = static_cast<int>(i);
         sphere_marker.type = visualization_msgs::msg::Marker::SPHERE;
         sphere_marker.action = visualization_msgs::msg::Marker::ADD;
-        sphere_marker.pose.position.x = waypoint_pose.position.x;
-        sphere_marker.pose.position.y = waypoint_pose.position.y;
-        sphere_marker.pose.position.z = waypoint_pose.position.z;
+        sphere_marker.pose.position = pose.position;
         sphere_marker.scale.x = 0.2;
         sphere_marker.scale.y = 0.2;
         sphere_marker.scale.z = 0.2;
@@ -83,12 +74,11 @@ void WaypointVisualizer::createMarkers()
         sphere_marker.color.b = 0.0;
         sphere_markers_.markers.push_back(sphere_marker);
 
-        // Create TEXT Marker
         visualization_msgs::msg::Marker text_marker;
         text_marker.header.frame_id = visualization_frame_id_;
         text_marker.header.stamp = this->now();
         text_marker.ns = "waypoints_text";
-        text_marker.id = waypoint_id;
+        text_marker.id = static_cast<int>(i);
         text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
         text_marker.action = visualization_msgs::msg::Marker::ADD;
         text_marker.scale.z = 0.3;
@@ -96,24 +86,23 @@ void WaypointVisualizer::createMarkers()
         text_marker.color.r = 0.0;
         text_marker.color.g = 0.0;
         text_marker.color.b = 0.0;
-        text_marker.text = "ID:" + std::to_string(waypoint_id);
+        text_marker.text = "ID:" + std::to_string(waypoint.id);
         if (!function_commands.empty())
         {
             text_marker.text += "\nCmd:" + function_commands;
         }
 
-        text_marker.pose.position.x = waypoint_pose.position.x + 0.3;
-        text_marker.pose.position.y = waypoint_pose.position.y - 0.3;
-        text_marker.pose.position.z = waypoint_pose.position.z + 0.3;
+        text_marker.pose.position.x = pose.position.x + 0.3;
+        text_marker.pose.position.y = pose.position.y - 0.3;
+        text_marker.pose.position.z = pose.position.z + 0.3;
 
         text_markers_.markers.push_back(text_marker);
 
-        // Create ARROW Marker
         visualization_msgs::msg::Marker arrow_marker;
         arrow_marker.header.frame_id = visualization_frame_id_;
         arrow_marker.header.stamp = this->now();
         arrow_marker.ns = "waypoints_arrow";
-        arrow_marker.id = waypoint_id;
+        arrow_marker.id = static_cast<int>(i);
         arrow_marker.type = visualization_msgs::msg::Marker::ARROW;
         arrow_marker.action = visualization_msgs::msg::Marker::ADD;
         arrow_marker.scale.x = 0.05;
@@ -124,12 +113,13 @@ void WaypointVisualizer::createMarkers()
         arrow_marker.color.g = 0.0;
         arrow_marker.color.b = 0.0;
 
-        geometry_msgs::msg::Point start_point, end_point;
-        start_point.x = waypoint_pose.position.x;
-        start_point.y = waypoint_pose.position.y;
-        start_point.z = waypoint_pose.position.z;
+        geometry_msgs::msg::Point start_point;
+        start_point.x = pose.position.x;
+        start_point.y = pose.position.y;
+        start_point.z = pose.position.z;
 
-        double arrow_length = 0.3;
+        geometry_msgs::msg::Point end_point;
+        constexpr double arrow_length = 0.3;
         end_point.x = start_point.x + arrow_length * std::cos(yaw);
         end_point.y = start_point.y + arrow_length * std::sin(yaw);
         end_point.z = start_point.z;
@@ -139,14 +129,13 @@ void WaypointVisualizer::createMarkers()
 
         arrow_markers_.markers.push_back(arrow_marker);
 
-        // Create LINE Marker
         if (i > 0)
         {
             visualization_msgs::msg::Marker line_marker;
             line_marker.header.frame_id = visualization_frame_id_;
             line_marker.header.stamp = this->now();
             line_marker.ns = "waypoints_line";
-            line_marker.id = waypoint_id;
+            line_marker.id = static_cast<int>(i);
             line_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
             line_marker.action = visualization_msgs::msg::Marker::ADD;
             line_marker.scale.x = 0.02;
@@ -156,14 +145,15 @@ void WaypointVisualizer::createMarkers()
             line_marker.color.b = 0.0;
 
             geometry_msgs::msg::Point prev_point;
-            prev_point.x = std::stod(waypoints_data_[i - 1][1]);
-            prev_point.y = std::stod(waypoints_data_[i - 1][2]);
-            prev_point.z = std::stod(waypoints_data_[i - 1][3]);
+            const auto & prev_pose = waypoints_[i - 1].pose;
+            prev_point.x = prev_pose.position.x;
+            prev_point.y = prev_pose.position.y;
+            prev_point.z = prev_pose.position.z;
 
             geometry_msgs::msg::Point current_point;
-            current_point.x = waypoint_pose.position.x;
-            current_point.y = waypoint_pose.position.y;
-            current_point.z = waypoint_pose.position.z;
+            current_point.x = pose.position.x;
+            current_point.y = pose.position.y;
+            current_point.z = pose.position.z;
 
             line_marker.points.push_back(prev_point);
             line_marker.points.push_back(current_point);
